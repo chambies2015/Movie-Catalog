@@ -23,9 +23,7 @@ Movie Tracker is an evolution of the original Movie Catalog project. It provides
    ```
 
 2. Start the server:
-   ```bash
-   uvicorn movie_tracker.main:app --reload
-   ```
+   Run the start.bat to start the server and automatically open the UI file.
 
    The API will be available at `http://127.0.0.1:8000`. Visit `http://127.0.0.1:8000/docs` for interactive Swagger documentation.
 
