@@ -5,6 +5,7 @@
   <title>Movie Tracker</title>
   <style>
     :root {
+      /* Light mode colour palette */
       --bg: #f7f9fc;
       --fg: #2a2a2a;
       --card-bg: #ffffff;
@@ -15,6 +16,7 @@
       --btn-radius: 4px;
     }
     body.dark-mode {
+      /* Dark mode overrides */
       --bg: #1e1e2f;
       --fg: #e0e0e0;
       --card-bg: #2c2c3e;
@@ -22,8 +24,11 @@
       --primary-hover: #303f9f;
       --table-header-bg: #3949ab;
       --table-row-alt: #2a2a3b;
+      /* In dark mode, use a darker overlay on the theater background */
+      background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('movie_theater_background.jpg');
     }
     body {
+      /* Base typography and spacing */
       background-color: var(--bg);
       color: var(--fg);
       font-family: Arial, sans-serif;
@@ -31,10 +36,34 @@
       margin: 0;
       padding: 20px;
       transition: background-color 0.3s, color 0.3s;
+      /* Movie theatre backdrop across the page.  A translucent white overlay keeps
+         content readable in light mode. */
+      background-image: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('movie_theater_background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
     .container {
       max-width: 900px;
       margin: 0 auto;
+    }
+    /* Film strip header remains unchanged */
+    .header {
+      height: 200px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('film_background.jpg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .header h1 {
+      font-size: 3rem;
+      color: #fff;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .toggle-btn {
       position: fixed;
@@ -51,19 +80,12 @@
     .toggle-btn:hover {
       background-color: var(--primary-hover);
     }
-    h1 {
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
     .card {
       background-color: var(--card-bg);
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       margin-bottom: 20px;
-    }
-    .card h2 {
-      margin-top: 0;
     }
     input[type="text"], input[type="number"], select {
       padding: 8px;
@@ -113,12 +135,49 @@
     tr:hover td {
       background-color: rgba(0,0,0,0.02);
     }
+    /* Responsive table layout */
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      tr {
+        margin-bottom: 10px;
+      }
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+      }
+      td:before {
+        position: absolute;
+        top: 12px;
+        left: 6px;
+        width: 45%;
+        white-space: nowrap;
+      }
+      td:nth-of-type(1):before { content: "ID"; }
+      td:nth-of-type(2):before { content: "Title"; }
+      td:nth-of-type(3):before { content: "Director"; }
+      td:nth-of-type(4):before { content: "Year"; }
+      td:nth-of-type(5):before { content: "Rating"; }
+      td:nth-of-type(6):before { content: "Watched"; }
+      td:nth-of-type(7):before { content: "IMDb"; }
+      td:nth-of-type(8):before { content: "Actions"; }
+    }
   </style>
 </head>
 <body>
+  <!-- Dark/light toggle -->
   <button id="toggleMode" class="toggle-btn">Night Mode</button>
   <div class="container">
-    <h1>Movie Tracker</h1>
+    <div class="header">
+      <h1>Movie Tracker</h1>
+    </div>
     <div class="card">
       <h2>Add Movie</h2>
       <form id="addForm">
@@ -140,7 +199,6 @@
         <button type="submit" class="action-btn">Add</button>
       </form>
     </div>
-
     <div class="card">
       <h2>Movies</h2>
       <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
@@ -152,172 +210,147 @@
         </select>
         <button id="loadMovies" class="action-btn" style="flex: 1; min-width: 120px;">Load Movies</button>
       </div>
-      <div style="overflow-x:auto;">
-        <table id="moviesTable">
-          <thead>
-            <tr>
-              <th style="width:5%;">ID</th>
-              <th style="width:25%;">Title</th>
-              <th style="width:20%;">Director</th>
-              <th style="width:10%;">Year</th>
-              <th style="width:10%;">Rating</th>
-              <th style="width:10%;">Watched</th>
-              <th style="width:10%;">IMDb</th>
-              <th style="width:20%;">Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <table id="movieTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Director</th>
+            <th>Year</th>
+            <th>Rating</th>
+            <th>Watched</th>
+            <th>IMDb</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
-
   <script>
-    // Toggle night mode
-    const toggleButton = document.getElementById('toggleMode');
-    toggleButton.addEventListener('click', () => {
+    let editId = null;
+    // Toggle dark/light mode
+    document.getElementById('toggleMode').addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        toggleButton.textContent = 'Light Mode';
-      } else {
-        toggleButton.textContent = 'Night Mode';
-      }
+      const btn = document.getElementById('toggleMode');
+      btn.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Night Mode';
     });
-
-    const apiBase = 'http://127.0.0.1:8000';
-
+    // Add movie handler
     document.getElementById('addForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const movie = {
         title: document.getElementById('title').value,
         director: document.getElementById('director').value,
-        year: parseInt(document.getElementById('year').value),
-        watched: document.getElementById('watched').checked
+        year: parseInt(document.getElementById('year').value, 10),
+        watched: document.getElementById('watched').checked,
       };
       const ratingVal = document.getElementById('rating').value;
-  if (ratingVal) {
-    movie.rating = parseFloat(ratingVal);
-  }
-      const res = await fetch(`${apiBase}/movies/`, {
+      if (ratingVal) movie.rating = parseFloat(ratingVal);
+      const response = await fetch('/movies/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(movie)
+        body: JSON.stringify(movie),
       });
-      if(res.ok) {
+      if (response.ok) {
+        document.getElementById('addForm').reset();
         loadMovies();
-        e.target.reset();
-      } else {
-        const msg = await res.text();
-        alert('Error adding movie: ' + msg);
       }
     });
-
+    // Load movies
     async function loadMovies() {
       const search = document.getElementById('search').value;
       const sort = document.getElementById('sort').value;
-      const params = new URLSearchParams();
-      if(search) params.append('search', search);
-      if(sort) params.append('sort_by', sort);
-      const res = await fetch(`${apiBase}/movies/?${params.toString()}`);
-      if(!res.ok) {
-        const msg = await res.text();
-        alert('Error loading movies: ' + msg);
-        return;
+      let url = '/movies/?';
+      if (search) url += `search=${encodeURIComponent(search)}&`;
+      if (sort) url += `sort_by=${encodeURIComponent(sort)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const movies = await res.json();
+        const tbody = document.querySelector('#movieTable tbody');
+        tbody.innerHTML = '';
+        movies.forEach((movie) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${movie.id}</td>
+            <td>${movie.title}</td>
+            <td>${movie.director}</td>
+            <td>${movie.year}</td>
+            <td>${movie.rating ?? ''}</td>
+            <td>${movie.watched}</td>
+            <td><a href="https://www.imdb.com/find?q=${encodeURIComponent(movie.title)}" target="_blank">Search</a></td>
+            <td>
+              <button class="action-btn" onclick="startEdit(${movie.id}, '${encodeURIComponent(movie.title)}', '${encodeURIComponent(movie.director)}', ${movie.year}, ${movie.rating ?? 'null'}, ${movie.watched})">Edit</button>
+              <button class="action-btn" onclick="deleteMovie(${movie.id})">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
       }
-      const data = await res.json();
-      const tbody = document.getElementById('moviesTable').querySelector('tbody');
-      tbody.innerHTML = '';
-      data.forEach(movie => {
-        const imdbLink = 'https://www.imdb.com/find?q=' + encodeURIComponent(movie.title);
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${movie.id}</td>
-          <td>${movie.title}</td>
-          <td>${movie.director}</td>
-          <td>${movie.year}</td>
-          <td>${movie.rating ?? ''}</td>
-          <td>${movie.watched}</td>
-          <td><a href="${imdbLink}" target="_blank">Search</a></td>
-          <td>
-            <button class="action-btn" onclick="startEdit(${movie.id})">Edit</button>
-            <button class="action-btn" onclick="deleteMovie(${movie.id})">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
     }
-
     document.getElementById('loadMovies').addEventListener('click', loadMovies);
-
+    // Delete movie
     async function deleteMovie(id) {
-      if(!confirm('Delete movie?')) return;
-      const res = await fetch(`${apiBase}/movies/${id}`, { method: 'DELETE' });
-      if(res.ok) {
-        loadMovies();
-      } else {
-        const msg = await res.text();
-        alert('Error deleting movie: ' + msg);
-      }
+      const res = await fetch(`/movies/${id}`, { method: 'DELETE' });
+      if (res.ok) loadMovies();
     }
-
-    let editId = null;
-
-    function startEdit(id) {
+    // Start edit
+    window.startEdit = function (id, title, director, year, rating, watched) {
       editId = id;
-      const tbody = document.getElementById('moviesTable').querySelector('tbody');
-      const rows = Array.from(tbody.children);
-      const row = rows.find(r => r.children[0].textContent == id);
-      if(!row) return;
-      const cells = row.children;
-      const formRow = document.createElement('tr');
-      formRow.innerHTML = `
-        <td>${id}</td>
-        <td><input type="text" id="editTitle" value="${cells[1].textContent}" style="width:95%; padding:6px;"></td>
-        <td><input type="text" id="editDirector" value="${cells[2].textContent}" style="width:90%; padding:6px;"></td>
-        <td><input type="number" id="editYear" value="${cells[3].textContent}" style="width:80%; padding:6px;"></td>
-        <td><input type="number" step="0.1" id="editRating" value="${cells[4].textContent}" style="width:80%; padding:6px;"></td>
-        <td><input type="checkbox" id="editWatched" ${cells[5].textContent == 'true' ? 'checked' : ''}></td>
-        <td>${cells[6].innerHTML}</td>
-        <td>
-          <button class="action-btn" onclick="saveEdit()" style="margin-bottom:4px;">Save</button>
-          <button class="action-btn" onclick="cancelEdit()">Cancel</button>
-        </td>
-      `;
-      tbody.replaceChild(formRow, row);
-    }
-
-    async function saveEdit() {
-      if(editId === null) return;
+      document.getElementById('title').value = decodeURIComponent(title);
+      document.getElementById('director').value = decodeURIComponent(director);
+      document.getElementById('year').value = year;
+      document.getElementById('rating').value = rating !== null ? rating : '';
+      document.getElementById('watched').checked = watched;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    // Update movie
+    async function updateMovie() {
+      if (editId === null) return;
       const movieUpdate = {
-    title: document.getElementById('editTitle').value,
-    director: document.getElementById('editDirector').value,
-    year: parseInt(document.getElementById('editYear').value, 10),
-    watched: document.getElementById('editWatched').checked
-  };
-  const ratingVal = document.getElementById('editRating').value;
-  if (ratingVal) {
-    movieUpdate.rating = parseFloat(ratingVal);
-  }
-      const res = await fetch(`${apiBase}/movies/${editId}`, {
+        title: document.getElementById('title').value,
+        director: document.getElementById('director').value,
+        year: parseInt(document.getElementById('year').value, 10),
+        watched: document.getElementById('watched').checked,
+      };
+      const ratingVal = document.getElementById('rating').value;
+      if (ratingVal) movieUpdate.rating = parseFloat(ratingVal);
+      const res = await fetch(`/movies/${editId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(movieUpdate)
+        body: JSON.stringify(movieUpdate),
       });
-      if(res.ok) {
+      if (res.ok) {
         editId = null;
+        document.getElementById('addForm').reset();
         loadMovies();
-      } else {
-        const msg = await res.text();
-        alert('Error updating movie: ' + msg);
       }
     }
-
-    function cancelEdit() {
-      editId = null;
-      loadMovies();
-    }
-
-    // Load movies initially
+    // Intercept form submission
+    document.getElementById('addForm').onsubmit = async function (e) {
+      e.preventDefault();
+      if (editId === null) {
+        const movie = {
+          title: document.getElementById('title').value,
+          director: document.getElementById('director').value,
+          year: parseInt(document.getElementById('year').value, 10),
+          watched: document.getElementById('watched').checked,
+        };
+        const ratingVal = document.getElementById('rating').value;
+        if (ratingVal) movie.rating = parseFloat(ratingVal);
+        const response = await fetch('/movies/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(movie),
+        });
+        if (response.ok) {
+          document.getElementById('addForm').reset();
+          loadMovies();
+        }
+      } else {
+        await updateMovie();
+      }
+    };
+    // Initial load
     loadMovies();
   </script>
 </body>
