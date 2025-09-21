@@ -37,3 +37,7 @@ The `ui/movie_tracker_ui.html` file provides a modern front‑end for your track
 - **Night mode:** Toggle between light and dark themes.
 
 To avoid CORS issues when opening the UI directly, either serve it via a local web server (e.g., `python -m http.server`) or keep CORS enabled in FastAPI.
+
+# Preview:
+<img width="2085" height="1945" alt="image" src="https://github.com/user-attachments/assets/bcf75d99-617e-4782-8e7f-c57fb9ea9be6" />
+
