@@ -239,20 +239,27 @@
       </form>
     </div>
     <div class="card">
-      <h2>Movies</h2>
+      <!-- Movies header with count on the right -->
+      <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2 style="margin: 0;">Movies</h2>
+        <span id="movieCount" style="font-weight: bold;"></span>
+      </div>
       <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
         <input type="text" id="search" placeholder="Search by title or director" style="flex: 2; min-width: 200px;">
-        <select id="sort" style="flex: 1; min-width: 140px;">
+        <!-- Combined sort field and order into one select for simplicity -->
+        <select id="sort" style="flex: 1; min-width: 200px;">
           <option value="">Sort by...</option>
-          <option value="rating">Rating</option>
-          <option value="year">Year</option>
+          <option value="rating-asc">Rating (Low → High)</option>
+          <option value="rating-desc">Rating (High → Low)</option>
+          <option value="year-asc">Year (Oldest → Newest)</option>
+          <option value="year-desc">Year (Newest → Oldest)</option>
         </select>
         <button id="loadMovies" class="action-btn" style="flex: 1; min-width: 120px;">Load Movies</button>
       </div>
       <table id="movieTable">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Poster</th>
             <th>Title</th>
             <th>Director</th>
             <th>Year</th>
@@ -266,6 +273,7 @@
       </table>
     </div>
   </div>
+  <script src="credentials.js"></script>
   <script>
     // Determine the API base URL.  When opening from a file (file://),
     // location.origin is "null" in most browsers.  For those cases, or when
@@ -273,6 +281,11 @@
     // port 8000.  Otherwise, use relative paths to the hosting origin.
     const isLocal = (location.protocol === 'file:' || location.origin === 'null' || location.origin === '');
     const API_BASE = isLocal ? 'http://127.0.0.1:8000' : '';
+    // If you have an OMDb API key, populate this constant.  The UI will
+    // attempt to fetch posters from OMDb based on the movie title and year.
+    // Leave it blank to disable poster fetching; the poster cells will
+    // remain empty and the IMDb search link will still be available.
+    // const OMDB_API_KEY = 'OMDB_API_KEYS';
 
     // Track row being edited inline
     let editingRowId = null;
@@ -318,19 +331,32 @@
     // Load movies
     async function loadMovies() {
       const search = document.getElementById('search').value;
-      const sort = document.getElementById('sort').value;
+      const sortVal = document.getElementById('sort').value;
+      let sortField = '';
+      let order = '';
+      if (sortVal) {
+        const parts = sortVal.split('-');
+        sortField = parts[0];
+        order = parts[1] || '';
+      }
       let url = `${API_BASE}/movies/?`;
       if (search) url += `search=${encodeURIComponent(search)}&`;
-      if (sort) url += `sort_by=${encodeURIComponent(sort)}`;
+      if (sortField) url += `sort_by=${encodeURIComponent(sortField)}&`;
+      if (order) url += `order=${encodeURIComponent(order)}`;
       const res = await fetch(url);
       if (res.ok) {
         const movies = await res.json();
         const tbody = document.querySelector('#movieTable tbody');
         tbody.innerHTML = '';
+        // Update the movie count display
+        const countElem = document.getElementById('movieCount');
+        if (countElem) countElem.textContent = `${movies.length} Movies`;
+        // Build table rows
         movies.forEach((movie) => {
           const tr = document.createElement('tr');
+          // Build poster cell placeholder; actual image will be loaded asynchronously
           tr.innerHTML = `
-            <td>${movie.id}</td>
+            <td id="poster-${movie.id}"></td>
             <td>${movie.title}</td>
             <td>${movie.director}</td>
             <td>${movie.year}</td>
@@ -343,7 +369,39 @@
             </td>
           `;
           tbody.appendChild(tr);
+          // Attempt to fetch poster from OMDb if API key is provided
+          if (OMDB_API_KEY) {
+            fetchPoster(movie.id, movie.title, movie.year);
+          }
         });
+      }
+    }
+
+    /**
+     * Fetch the poster for a movie using the OMDb API.  If a valid
+     * poster URL is returned, an <img> element will be inserted into the
+     * appropriate table cell.  If the API key is not provided or the
+     * poster is not available, the cell will remain empty.  This
+     * function silently ignores any errors encountered during fetch.
+     *
+     * @param {number} id The movie ID used to identify the table cell.
+     * @param {string} title The movie title used in the API query.
+     * @param {number} year The release year used in the API query.
+     */
+    async function fetchPoster(id, title, year) {
+      try {
+        const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&y=${encodeURIComponent(year)}&apikey=${OMDB_API_KEY}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.Poster && data.Poster !== 'N/A') {
+          const cell = document.getElementById(`poster-${id}`);
+          if (cell) {
+            cell.innerHTML = `<img src="${data.Poster}" alt="Poster" style="width: 60px; max-height: 90px; object-fit: cover; border-radius: 4px;">`;
+          }
+        }
+      } catch (err) {
+        // Ignore errors silently; posters are optional
       }
     }
     document.getElementById('loadMovies').addEventListener('click', loadMovies);
