@@ -132,7 +132,7 @@
           <input type="number" id="year" placeholder="Year" required>
         </div>
         <div>
-          <input type="number" step="0.1" id="rating" placeholder="Rating" required>
+          <input type="number" step="0.1" id="rating" placeholder="Rating">
         </div>
         <div>
           <label>Watched <input type="checkbox" id="watched"></label>
@@ -192,9 +192,12 @@
         title: document.getElementById('title').value,
         director: document.getElementById('director').value,
         year: parseInt(document.getElementById('year').value),
-        rating: parseFloat(document.getElementById('rating').value),
         watched: document.getElementById('watched').checked
       };
+      const ratingVal = document.getElementById('rating').value;
+  if (ratingVal) {
+    movie.rating = parseFloat(ratingVal);
+  }
       const res = await fetch(`${apiBase}/movies/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -232,7 +235,7 @@
           <td>${movie.title}</td>
           <td>${movie.director}</td>
           <td>${movie.year}</td>
-          <td>${movie.rating}</td>
+          <td>${movie.rating ?? ''}</td>
           <td>${movie.watched}</td>
           <td><a href="${imdbLink}" target="_blank">Search</a></td>
           <td>
@@ -285,12 +288,16 @@
 
     async function saveEdit() {
       if(editId === null) return;
-      const movieUpdate = {};
-      movieUpdate.title = document.getElementById('editTitle').value;
-      movieUpdate.director = document.getElementById('editDirector').value;
-      movieUpdate.year = parseInt(document.getElementById('editYear').value);
-      movieUpdate.rating = parseFloat(document.getElementById('editRating').value);
-      movieUpdate.watched = document.getElementById('editWatched').checked;
+      const movieUpdate = {
+    title: document.getElementById('editTitle').value,
+    director: document.getElementById('editDirector').value,
+    year: parseInt(document.getElementById('editYear').value, 10),
+    watched: document.getElementById('editWatched').checked
+  };
+  const ratingVal = document.getElementById('editRating').value;
+  if (ratingVal) {
+    movieUpdate.rating = parseFloat(ratingVal);
+  }
       const res = await fetch(`${apiBase}/movies/${editId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
