@@ -126,10 +126,14 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      /* Prevent column widths from changing when a row enters edit mode */
+      table-layout: fixed;
     }
     th, td {
       padding: 12px;
       border: 1px solid #ddd;
+      /* Center cell contents vertically to avoid row height jumps when inputs are inserted */
+      vertical-align: middle;
     }
     th {
       background-color: var(--table-header-bg);
@@ -149,13 +153,25 @@
     table input[type="text"],
     table input[type="number"] {
       margin: 0;
+      /* Keep padding minimal so the input height matches the default cell height. */
       padding: 4px;
       width: 100%;
       box-sizing: border-box;
+      /* Inherit font styles so the input text matches the table text. */
+      font: inherit;
+      /* Ensure borders do not expand the row height unexpectedly. */
+      border: 1px solid #ccc;
+      border-radius: var(--btn-radius);
     }
     table input[type="checkbox"] {
       margin: 0 auto;
       display: block;
+    }
+
+    /* Disabled buttons should appear muted and unclickable */
+    button.action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     /* Responsive table layout */
@@ -261,6 +277,35 @@
     // Track row being edited inline
     let editingRowId = null;
     let editingRowElement = null;
+
+    /**
+     * Disable all Edit/Delete buttons in the movie table except those
+     * associated with the row currently being edited.  This prevents
+     * starting another edit while one is in progress.
+     * @param {HTMLTableRowElement} currentRow The row being edited
+     */
+    function disableOtherRowButtons(currentRow) {
+      const buttons = document.querySelectorAll('#movieTable button.action-btn');
+      buttons.forEach(btn => {
+        // Determine the row for each button.  Only disable buttons
+        // belonging to rows other than the current editing row.
+        const btnRow = btn.closest('tr');
+        if (!btnRow.isSameNode(currentRow)) {
+          btn.disabled = true;
+        }
+      });
+    }
+
+    /**
+     * Re-enable all buttons in the movie table.  Should be called
+     * after an edit is saved or cancelled.
+     */
+    function enableAllRowButtons() {
+      const buttons = document.querySelectorAll('#movieTable button.action-btn');
+      buttons.forEach(btn => {
+        btn.disabled = false;
+      });
+    }
     // Toggle dark/light mode
     document.getElementById('toggleMode').addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
@@ -331,6 +376,9 @@
         <button class="action-btn" onclick="saveRowEdit(${id})">Save</button>
         <button class="action-btn" onclick="cancelRowEdit()">Cancel</button>
       `;
+
+      // Disable edit/delete buttons on other rows while editing
+      disableOtherRowButtons(row);
     };
 
     // Save inline edits for a row
@@ -352,6 +400,8 @@
       if (res.ok) {
         editingRowId = null;
         editingRowElement = null;
+        // Re-enable all row buttons after saving
+        enableAllRowButtons();
         loadMovies();
       }
     };
@@ -360,6 +410,8 @@
     window.cancelRowEdit = function () {
       editingRowId = null;
       editingRowElement = null;
+      // Re-enable all buttons before reloading the list
+      enableAllRowButtons();
       loadMovies();
     };
     // Intercept form submission
