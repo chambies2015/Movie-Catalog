@@ -29,6 +29,8 @@ Movie Tracker is an evolution of my original Movie Catalog project. It provides 
 
    The API will be available at `http://127.0.0.1:8000`. Visit `http://127.0.0.1:8000/docs` for interactive Swagger documentation.
 
+   The UI will automatically open in default browswer 5 seconds after uvicorn server startup.
+
 ## Using the UI
 
 The `ui/movie_tracker_ui.html` file provides a modern front‑end for your tracker:
