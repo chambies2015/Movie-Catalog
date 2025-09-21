@@ -4,7 +4,7 @@ Refer to the uploaded "Movie Catalog Documentation" pdf.
 
 ## Overview
 
-Movie Tracker is an evolution of the original Movie Catalog project. It provides a clean FastAPI backend and optional UI for managing and tracking movies or books you plan to watch or have already watched. The refactored code organizes the backend into a Python package called `movie_tracker`, making it easy to integrate into larger applications.
+Movie Tracker is an evolution of the original Movie Catalog project. It provides a clean FastAPI backend and optional UI for managing and tracking movies you plan to watch or have already watched. The refactored code organizes the backend into a Python package called `movie_tracker`, making it easy to integrate into larger applications.
 
 ## Features
 
