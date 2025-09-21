@@ -235,9 +235,12 @@
     </div>
   </div>
   <script>
-    // Determine the API base URL. When the page is opened via the file:// protocol
-    // there is no origin, so default to the local backend running on port 8000.
-    const API_BASE = location.origin.startsWith('file') || location.origin === '' ? 'http://127.0.0.1:8000' : '';
+    // Determine the API base URL.  When opening from a file (file://),
+    // location.origin is "null" in most browsers.  For those cases, or when
+    // there is no origin, default to the local FastAPI backend running on
+    // port 8000.  Otherwise, use relative paths to the hosting origin.
+    const isLocal = (location.protocol === 'file:' || location.origin === 'null' || location.origin === '');
+    const API_BASE = isLocal ? 'http://127.0.0.1:8000' : '';
 
     let editId = null;
     // Toggle dark/light mode
