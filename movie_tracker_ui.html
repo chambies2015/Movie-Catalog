@@ -142,6 +142,22 @@
       background-color: rgba(0,0,0,0.02);
     }
 
+    /* Adjust input styles inside the table for inline editing.  Without this,
+       the default form styling causes table rows to expand vertically when
+       editing.  These rules ensure the inputs occupy the full cell width
+       without extra margin or padding. */
+    table input[type="text"],
+    table input[type="number"] {
+      margin: 0;
+      padding: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    table input[type="checkbox"] {
+      margin: 0 auto;
+      display: block;
+    }
+
     /* Responsive table layout */
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr {
