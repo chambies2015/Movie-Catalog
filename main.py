@@ -42,8 +42,13 @@ async def read_root():
 
 
 @app.get("/movies/", response_model=List[schemas.Movie], tags=["movies"])
-async def list_movies(search: Optional[str] = None, sort_by: Optional[str] = None, db: Session = Depends(get_db)):
-    return crud.get_movies(db, search=search, sort_by=sort_by)
+async def list_movies(
+        search: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        order: Optional[str] = None,  # new
+        db: Session = Depends(get_db),
+):
+    return crud.get_movies(db, search=search, sort_by=sort_by, order=order)
 
 
 @app.get("/movies/{movie_id}", response_model=schemas.Movie, tags=["movies"])

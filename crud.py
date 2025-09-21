@@ -5,12 +5,17 @@ and deleting movie entries.
 """
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 import models
 import schemas
 
 
-def get_movies(db: Session, search: Optional[str] = None, sort_by: Optional[str] = None) -> List[models.Movie]:
+def get_movies(
+    db: Session,
+    search: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    order: Optional[str] = None,
+) -> List[models.Movie]:
     query = db.query(models.Movie)
     if search:
         like_pattern = f"%{search}%"
@@ -18,10 +23,13 @@ def get_movies(db: Session, search: Optional[str] = None, sort_by: Optional[str]
             models.Movie.title.ilike(like_pattern) |
             models.Movie.director.ilike(like_pattern)
         )
+    sort_order = asc  # default
+    if order and order.lower() == "desc":
+        sort_order = desc
     if sort_by == "rating":
-        query = query.order_by(asc(models.Movie.rating))
+        query = query.order_by(sort_order(models.Movie.rating))
     elif sort_by == "year":
-        query = query.order_by(asc(models.Movie.year))
+        query = query.order_by(sort_order(models.Movie.year))
     return query.all()
 
 
