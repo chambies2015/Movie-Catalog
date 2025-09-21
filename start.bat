@@ -1,6 +1,10 @@
 @echo off
-REM Start the API in a new console window
+REM Change to the directory of this script so relative paths work (movies.db etc.)
+cd /d "%~dp0"
+
+REM Start the API in a new console window from the correct directory
 start "" cmd /k "python -m uvicorn main:app --port 8000"
+
 REM Wait a few seconds for the server to initialize
 timeout /t 5 /nobreak >nul
 
