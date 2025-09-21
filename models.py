@@ -1,5 +1,5 @@
 """
-SQLAlchemy models for the Movie Catalog API.
+SQLAlchemy models for the Movie Tracker API.
 Defines the Movie ORM model used to persist movie information.
 """
 from sqlalchemy import Column, Integer, String, Boolean, Float
@@ -12,5 +12,5 @@ class Movie(Base):
     title = Column(String, index=True)
     director = Column(String, index=True)
     year = Column(Integer)
-    rating = Column(Float)  # e.g. 8.5/10
+    rating = Column(Float)
     watched = Column(Boolean, default=False)

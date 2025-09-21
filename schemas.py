@@ -1,5 +1,5 @@
 """
-Pydantic models (schemas) for the Movie Catalog API.
+Pydantic models (schemas) for the Movie Tracker API.
 These define the shape of data accepted/returned by the API.
 """
 from typing import Optional
@@ -30,4 +30,4 @@ class Movie(MovieBase):
     id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True

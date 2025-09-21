@@ -1,9 +1,9 @@
 """
-Database setup for the Movie Catalog API.
+Database setup for the Movie Tracker API.
 
 This module configures the SQLAlchemy engine and session for a SQLite
-database stored in movies.db.  It also exposes a Base class that
-declarative models should inherit from.
+ database stored in movies.db. It also exposes a Base class that
+ declarative models should inherit from.
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

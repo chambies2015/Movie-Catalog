@@ -1,5 +1,5 @@
 """
-CRUD utility functions for the Movie Catalog API.
+CRUD utility functions for the Movie Tracker API.
 Encapsulates database operations for fetching, creating, updating,
 and deleting movie entries.
 """
