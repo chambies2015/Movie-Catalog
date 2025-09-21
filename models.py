@@ -1,3 +1,7 @@
+"""
+SQLAlchemy models for the Movie Catalog API.
+Defines the Movie ORM model used to persist movie information.
+"""
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from database import Base
 
