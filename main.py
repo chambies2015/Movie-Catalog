@@ -78,12 +78,3 @@ async def delete_movie(movie_id: int, db: Session = Depends(get_db)):
     if db_movie is None:
         raise HTTPException(status_code=404, detail="Movie not found")
     return db_movie
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)

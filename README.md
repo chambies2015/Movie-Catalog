@@ -11,7 +11,7 @@ Movie Tracker is an evolution of my original Movie Catalog project. It provides 
 - **SQLite persistence:** A lightweight database stores movie data locally.
 - **Search and sort:** Search by title or director and sort results by rating or year.
 - **CORS enabled:** The API is configured to accept requests from your local UI or other clients.
-- **Modern UI:** A standalone HTML file (see `ui/movie_tracker_ui.html`) lets you interact with the API. It supports light and dark modes and a sleek, responsive design.
+- **Modern UI:** A standalone HTML file (see `movie_tracker_ui.html`) lets you interact with the API. It supports light and dark modes and a sleek, responsive design.
 
 ## Running the API
 
@@ -31,7 +31,7 @@ Movie Tracker is an evolution of my original Movie Catalog project. It provides 
 
 ## Using the UI
 
-The `ui/movie_tracker_ui.html` file provides a modern front‑end for your tracker:
+The `movie_tracker_ui.html` file provides a modern front‑end for your tracker:
 
 - **Add movies:** Enter a title, director, year, rating, and watched flag.
 - **List & search:** View all movies, search by keyword, and sort by rating or year.
