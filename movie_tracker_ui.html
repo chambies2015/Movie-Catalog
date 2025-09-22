@@ -16,7 +16,6 @@
       --btn-radius: 4px;
     }
 
-    /* Dark mode overrides. Only card colours and text colours change. */
     body.dark-mode {
       --bg: #1e1e2f;
       --fg: #e0e0e0;
@@ -28,7 +27,6 @@
     }
 
     body {
-      /* Use the same movie‑theatre backdrop for both light and dark modes */
       background-image: url('movie_theater_background.jpg');
       background-size: cover;
       background-position: center;
@@ -47,7 +45,6 @@
       margin: 0 auto;
     }
 
-    /* Film strip header remains unchanged */
     .header {
       height: 200px;
       margin-bottom: 20px;
@@ -126,13 +123,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      /* Prevent column widths from changing when a row enters edit mode */
       table-layout: fixed;
     }
     th, td {
       padding: 12px;
       border: 1px solid #ddd;
-      /* Center cell contents vertically to avoid row height jumps when inputs are inserted */
       vertical-align: middle;
     }
     th {
@@ -146,20 +141,13 @@
       background-color: rgba(0,0,0,0.02);
     }
 
-    /* Adjust input styles inside the table for inline editing.  Without this,
-       the default form styling causes table rows to expand vertically when
-       editing.  These rules ensure the inputs occupy the full cell width
-       without extra margin or padding. */
     table input[type="text"],
     table input[type="number"] {
       margin: 0;
-      /* Keep padding minimal so the input height matches the default cell height. */
       padding: 4px;
       width: 100%;
       box-sizing: border-box;
-      /* Inherit font styles so the input text matches the table text. */
       font: inherit;
-      /* Ensure borders do not expand the row height unexpectedly. */
       border: 1px solid #ccc;
       border-radius: var(--btn-radius);
     }
@@ -168,13 +156,11 @@
       display: block;
     }
 
-    /* Disabled buttons should appear muted and unclickable */
     button.action-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    /* Responsive table layout */
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr {
         display: block;
@@ -211,7 +197,6 @@
   </style>
 </head>
 <body>
-  <!-- Dark/light toggle -->
   <button id="toggleMode" class="toggle-btn">Night Mode</button>
   <div class="container">
     <div class="header">
@@ -239,14 +224,12 @@
       </form>
     </div>
     <div class="card">
-      <!-- Movies header with count on the right -->
       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2 style="margin: 0;">Movies</h2>
         <span id="movieCount" style="font-weight: bold;"></span>
       </div>
       <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
         <input type="text" id="search" placeholder="Search by title or director" style="flex: 2; min-width: 200px;">
-        <!-- Combined sort field and order into one select for simplicity -->
         <select id="sort" style="flex: 1; min-width: 200px;">
           <option value="">Sort by...</option>
           <option value="rating-asc">Rating (Low → High)</option>
@@ -275,28 +258,12 @@
   </div>
   <script src="credentials.js"></script>
   <script>
-    // Determine the API base URL.  When opening from a file (file://),
-    // location.origin is "null" in most browsers.  For those cases, or when
-    // there is no origin, default to the local FastAPI backend running on
-    // port 8000.  Otherwise, use relative paths to the hosting origin.
     const isLocal = (location.protocol === 'file:' || location.origin === 'null' || location.origin === '');
     const API_BASE = isLocal ? 'http://127.0.0.1:8000' : '';
-    // If you have an OMDb API key, populate this constant.  The UI will
-    // attempt to fetch posters from OMDb based on the movie title and year.
-    // Leave it blank to disable poster fetching; the poster cells will
-    // remain empty and the IMDb search link will still be available.
-    // const OMDB_API_KEY = 'OMDB_API_KEYS';
 
-    // Track row being edited inline
     let editingRowId = null;
     let editingRowElement = null;
 
-    /**
-     * Disable all Edit/Delete buttons in the movie table except those
-     * associated with the row currently being edited.  This prevents
-     * starting another edit while one is in progress.
-     * @param {HTMLTableRowElement} currentRow The row being edited
-     */
     function disableOtherRowButtons(currentRow) {
       const buttons = document.querySelectorAll('#movieTable button.action-btn');
       buttons.forEach(btn => {
@@ -309,26 +276,18 @@
       });
     }
 
-    /**
-     * Re-enable all buttons in the movie table.  Should be called
-     * after an edit is saved or cancelled.
-     */
     function enableAllRowButtons() {
       const buttons = document.querySelectorAll('#movieTable button.action-btn');
       buttons.forEach(btn => {
         btn.disabled = false;
       });
     }
-    // Toggle dark/light mode
     document.getElementById('toggleMode').addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       const btn = document.getElementById('toggleMode');
       btn.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Night Mode';
     });
-    // Note: do not attach a separate submit handler here; the unified form
-    // submission logic is defined below in the onsubmit handler.  Having
-    // multiple handlers causes duplicate requests and breaks edit logic.
-    // Load movies
+
     async function loadMovies() {
       const search = document.getElementById('search').value;
       const sortVal = document.getElementById('sort').value;
@@ -348,13 +307,10 @@
         const movies = await res.json();
         const tbody = document.querySelector('#movieTable tbody');
         tbody.innerHTML = '';
-        // Update the movie count display
         const countElem = document.getElementById('movieCount');
         if (countElem) countElem.textContent = `${movies.length} Movies`;
-        // Build table rows
         movies.forEach((movie) => {
           const tr = document.createElement('tr');
-          // Build poster cell placeholder; actual image will be loaded asynchronously
           tr.innerHTML = `
             <td id="poster-${movie.id}"></td>
             <td>${movie.title}</td>
@@ -369,7 +325,6 @@
             </td>
           `;
           tbody.appendChild(tr);
-          // Attempt to fetch poster from OMDb if API key is provided
           if (OMDB_API_KEY) {
             fetchPoster(movie.id, movie.title, movie.year);
           }
@@ -377,17 +332,6 @@
       }
     }
 
-    /**
-     * Fetch the poster for a movie using the OMDb API.  If a valid
-     * poster URL is returned, an <img> element will be inserted into the
-     * appropriate table cell.  If the API key is not provided or the
-     * poster is not available, the cell will remain empty.  This
-     * function silently ignores any errors encountered during fetch.
-     *
-     * @param {number} id The movie ID used to identify the table cell.
-     * @param {string} title The movie title used in the API query.
-     * @param {number} year The release year used in the API query.
-     */
     async function fetchPoster(id, title, year) {
       try {
         const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&y=${encodeURIComponent(year)}&apikey=${OMDB_API_KEY}`;
@@ -401,45 +345,36 @@
           }
         }
       } catch (err) {
-        // Ignore errors silently; posters are optional
       }
     }
     document.getElementById('loadMovies').addEventListener('click', loadMovies);
-    // Delete movie
     async function deleteMovie(id) {
-      // Ask for confirmation before deleting
       if (!confirm('Are you sure you want to delete this movie?')) return;
       const res = await fetch(`${API_BASE}/movies/${id}`, { method: 'DELETE' });
       if (res.ok) loadMovies();
     }
-    // Enable inline editing for a row.  Replaces the row's cells with input
-    // fields and swaps action buttons for Save/Cancel.
+
     window.enableRowEdit = function (btn, id, encTitle, encDirector, year, rating, watched) {
       if (editingRowId !== null) return; // only allow one row in edit mode
       editingRowId = id;
-      // locate the row via the clicked button
       const row = btn.closest('tr');
       editingRowElement = row;
       const title = decodeURIComponent(encTitle);
       const director = decodeURIComponent(encDirector);
       const ratingVal = (rating !== null && rating !== 'null') ? rating : '';
-      // Replace cells with inputs
       row.cells[1].innerHTML = `<input type="text" id="edit-title" value="${title}">`;
       row.cells[2].innerHTML = `<input type="text" id="edit-director" value="${director}">`;
       row.cells[3].innerHTML = `<input type="number" id="edit-year" value="${year}">`;
       row.cells[4].innerHTML = `<input type="number" step="0.1" id="edit-rating" value="${ratingVal}">`;
       row.cells[5].innerHTML = `<input type="checkbox" id="edit-watched" ${watched ? 'checked' : ''}>`;
-      // Replace actions with Save and Cancel buttons
       row.cells[7].innerHTML = `
         <button class="action-btn" onclick="saveRowEdit(${id})">Save</button>
         <button class="action-btn" onclick="cancelRowEdit()">Cancel</button>
       `;
 
-      // Disable edit/delete buttons on other rows while editing
       disableOtherRowButtons(row);
     };
 
-    // Save inline edits for a row
     window.saveRowEdit = async function (id) {
       if (editingRowId !== id) return;
       const updated = {
@@ -458,24 +393,19 @@
       if (res.ok) {
         editingRowId = null;
         editingRowElement = null;
-        // Re-enable all row buttons after saving
         enableAllRowButtons();
         loadMovies();
       }
     };
 
-    // Cancel inline edit and reload list
     window.cancelRowEdit = function () {
       editingRowId = null;
       editingRowElement = null;
-      // Re-enable all buttons before reloading the list
       enableAllRowButtons();
       loadMovies();
     };
-    // Intercept form submission
     document.getElementById('addForm').onsubmit = async function (e) {
       e.preventDefault();
-      // Always create a new movie from the top form; inline editing is handled separately
       const movie = {
         title: document.getElementById('title').value,
         director: document.getElementById('director').value,
@@ -492,12 +422,10 @@
       if (response.ok) {
         document.getElementById('addForm').reset();
         loadMovies();
-        // Ensure button text says Add after a successful create
         const submitBtn = document.querySelector('#addForm button[type="submit"]');
         if (submitBtn) submitBtn.textContent = 'Add';
       }
     };
-    // Initial load
     loadMovies();
   </script>
 </body>

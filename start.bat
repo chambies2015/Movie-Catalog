@@ -1,14 +1,10 @@
 @echo off
-REM Change to the directory of this script so relative paths work (movies.db etc.)
 cd /d "%~dp0"
 
-REM Start the API in a new console window from the correct directory
 start "" cmd /k "python -m uvicorn main:app --port 8000"
 
-REM Wait a few seconds for the server to initialize
 timeout /t 5 /nobreak >nul
 
-REM Locate movie_tracker_ui.html relative to this script’s directory
 set "UIFile="
 for /r "%~dp0" %%f in (movie_tracker_ui.html) do (
   set "UIFile=%%f"
@@ -16,7 +12,6 @@ for /r "%~dp0" %%f in (movie_tracker_ui.html) do (
 )
 :found
 
-REM If the file was found, open it; otherwise print an error
 if defined UIFile (
   start "" "%UIFile%"
 ) else (

@@ -5,6 +5,7 @@ These define the shape of data accepted/returned by the API.
 from typing import Optional
 from pydantic import BaseModel, Field
 
+
 class MovieBase(BaseModel):
     title: str = Field(..., description="Title of the movie or book")
     director: str = Field(..., description="Director or author")
@@ -14,8 +15,10 @@ class MovieBase(BaseModel):
     )  # rating is now optional
     watched: Optional[bool] = Field(False, description="Whether it has been watched/read")
 
+
 class MovieCreate(MovieBase):
     pass
+
 
 class MovieUpdate(BaseModel):
     title: Optional[str] = None
@@ -24,9 +27,9 @@ class MovieUpdate(BaseModel):
     rating: Optional[float] = Field(None, ge=0, le=10)
     watched: Optional[bool] = None
 
+
 class Movie(MovieBase):
     id: int
 
     class Config:
-        from_attributes = True  # or orm_mode = True for Pydantic v1
-
+        from_attributes = True
