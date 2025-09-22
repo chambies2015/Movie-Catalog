@@ -43,7 +43,6 @@ The `movie_tracker_ui.html` file provides a modern front‑end for your tracker:
 <img width="2085" height="1945" alt="image" src="https://github.com/user-attachments/assets/bcf75d99-617e-4782-8e7f-c57fb9ea9be6" />
 
 # Future features:
-- **Add a notes/review section for each movie**
 - **Migrate to server/client setup**
 - **Account creation/login**
 - **Add friends to check each others lists**
