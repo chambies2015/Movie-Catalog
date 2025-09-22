@@ -14,6 +14,7 @@ class MovieBase(BaseModel):
         None, ge=0, le=10, description="Rating out of 10"
     )  # rating is now optional
     watched: Optional[bool] = Field(False, description="Whether it has been watched/read")
+    review: Optional[str] = Field(None, description="Optional review/notes for the entry")
 
 
 class MovieCreate(MovieBase):
@@ -26,6 +27,7 @@ class MovieUpdate(BaseModel):
     year: Optional[int] = Field(None, ge=0)
     rating: Optional[float] = Field(None, ge=0, le=10)
     watched: Optional[bool] = None
+    review: Optional[str] = None
 
 
 class Movie(MovieBase):

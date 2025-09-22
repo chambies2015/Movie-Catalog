@@ -12,5 +12,6 @@ class Movie(Base):
     title = Column(String, index=True)
     director = Column(String, index=True)
     year = Column(Integer)
-    rating = Column(Float)
+    rating = Column(Float, nullable=True)
     watched = Column(Boolean, default=False)
+    review = Column(String, nullable=True)

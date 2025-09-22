@@ -7,6 +7,7 @@ from typing import List, Optional
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect, text
 
 import crud
 import schemas
@@ -14,6 +15,18 @@ from database import Base, SessionLocal, engine
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
+
+# Lightweight migration: add missing columns if upgrading an existing DB
+try:
+    inspector = inspect(engine)
+    existing_columns = {col["name"] for col in inspector.get_columns("movies")}
+    if "review" not in existing_columns:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE movies ADD COLUMN review VARCHAR"))
+            conn.commit()
+except Exception:
+    # Best-effort migration; avoid crashing app startup if inspection fails
+    pass
 
 # Initialize FastAPI
 app = FastAPI(title="Movie Tracker API", description="Manage your movies and books", version="0.1.0")
