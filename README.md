@@ -40,7 +40,8 @@ The `movie_tracker_ui.html` file provides a modern front‑end for your tracker:
 - **Movie posters:** Each movie entry will search for related move poster and show it for each entry.
 
 # Preview:
-<img width="2085" height="1945" alt="image" src="https://github.com/user-attachments/assets/bcf75d99-617e-4782-8e7f-c57fb9ea9be6" />
+<img width="2116" height="1946" alt="image" src="https://github.com/user-attachments/assets/fb2b28ed-7cf7-4ab1-b2c4-2bbf056d4f17" />
+
 
 # Future features:
 - [x] **Add notes/review section**
