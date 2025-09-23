@@ -1,5 +1,5 @@
 """
-SQLAlchemy models for the Movie Tracker API.
+SQLAlchemy models for the StreamTracker API.
 Defines the Movie and TV Show ORM models used to persist entertainment information.
 """
 from sqlalchemy import Column, Integer, String, Boolean, Float

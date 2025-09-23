@@ -1,5 +1,5 @@
 """
-Pydantic models (schemas) for the Movie Tracker API.
+Pydantic models (schemas) for the StreamTracker API.
 These define the shape of data accepted/returned by the API.
 """
 from typing import Optional

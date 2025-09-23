@@ -1,5 +1,5 @@
 """
-CRUD utility functions for the Movie Tracker API.
+CRUD utility functions for the StreamTracker API.
 Encapsulates database operations for fetching, creating, updating,
 and deleting movie and TV show entries.
 """

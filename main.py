@@ -1,5 +1,5 @@
 """
-Entry point for the Movie Tracker API.
+Entry point for the StreamTracker API.
 Provides CRUD endpoints for managing movies and TV shows.
 """
 from typing import List, Optional
@@ -84,7 +84,7 @@ except Exception as e:
     pass
 
 # Initialize FastAPI
-app = FastAPI(title="Movie Tracker API", description="Manage your movies and TV shows", version="0.1.0")
+app = FastAPI(title="StreamTracker API", description="Manage your movies and TV shows", version="0.1.0")
 
 # Configure CORS to allow requests from any origin
 app.add_middleware(
@@ -106,7 +106,7 @@ def get_db():
 
 @app.get("/", tags=["root"])
 async def read_root():
-    return {"message": "Movie Tracker API is running \U0001f680"}
+    return {"message": "StreamTracker API is running \U0001f680"}
 
 
 # Movie endpoints

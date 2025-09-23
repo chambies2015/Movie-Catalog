@@ -1,5 +1,5 @@
 """
-Database setup for the Movie Tracker API.
+Database setup for the StreamTracker API.
 
 This module configures the SQLAlchemy engine and session for a SQLite
  database stored in movies.db. It also exposes a Base class that
