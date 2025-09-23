@@ -63,6 +63,42 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background-color: var(--card-bg);
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--fg);
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background-color: var(--primary);
+      color: white;
+      border-bottom-color: var(--primary);
+    }
+
+    .tab:hover:not(.active) {
+      background-color: var(--table-row-alt);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
     .toggle-btn {
       position: fixed;
       top: 20px;
@@ -225,64 +261,138 @@
   <button id="toggleMode" class="toggle-btn">Night Mode</button>
   <div class="container">
     <div class="header">
-      <h1>Movie Tracker</h1>
+      <h1>Movie & TV Tracker</h1>
     </div>
-    <div class="card">
-      <h2>Add Movie</h2>
-      <form id="addForm">
-        <div>
-          <input type="text" id="title" placeholder="Title" required>
-        </div>
-        <div>
-          <input type="text" id="director" placeholder="Director" required>
-        </div>
-        <div>
-          <input type="number" id="year" placeholder="Year" required>
-        </div>
-        <div>
-          <input type="number" step="0.1" id="rating" placeholder="Rating">
-        </div>
-        <div>
-          <label>Watched <input type="checkbox" id="watched"></label>
-        </div>
-        <div>
-          <input type="text" id="review" placeholder="Review (optional)">
-        </div>
-        <button type="submit" class="action-btn">Add</button>
-      </form>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('movies')">Movies</button>
+      <button class="tab" onclick="switchTab('tv-shows')">TV Shows</button>
     </div>
-    <div class="card">
-      <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2 style="margin: 0;">Movies</h2>
-        <span id="movieCount" style="font-weight: bold;"></span>
+
+    <!-- Movies Tab Content -->
+    <div id="movies-tab" class="tab-content active">
+      <div class="card">
+        <h2>Add Movie</h2>
+        <form id="addMovieForm">
+          <div>
+            <input type="text" id="movieTitle" placeholder="Title" required>
+          </div>
+          <div>
+            <input type="text" id="movieDirector" placeholder="Director" required>
+          </div>
+          <div>
+            <input type="number" id="movieYear" placeholder="Year" required>
+          </div>
+          <div>
+            <input type="number" step="0.1" id="movieRating" placeholder="Rating">
+          </div>
+          <div>
+            <label>Watched <input type="checkbox" id="movieWatched"></label>
+          </div>
+          <div>
+            <input type="text" id="movieReview" placeholder="Review (optional)">
+          </div>
+          <button type="submit" class="action-btn">Add Movie</button>
+        </form>
       </div>
-      <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-        <input type="text" id="search" placeholder="Search by title or director" style="flex: 2; min-width: 200px;">
-        <select id="sort" style="flex: 1; min-width: 200px;">
-          <option value="">Sort by...</option>
-          <option value="rating-asc">Rating (Low → High)</option>
-          <option value="rating-desc">Rating (High → Low)</option>
-          <option value="year-asc">Year (Oldest → Newest)</option>
-          <option value="year-desc">Year (Newest → Oldest)</option>
-        </select>
-        <button id="loadMovies" class="action-btn" style="flex: 1; min-width: 120px;">Load Movies</button>
+      <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h2 style="margin: 0;">Movies</h2>
+          <span id="movieCount" style="font-weight: bold;"></span>
+        </div>
+        <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="movieSearch" placeholder="Search by title or director" style="flex: 2; min-width: 200px;">
+          <select id="movieSort" style="flex: 1; min-width: 200px;">
+            <option value="">Sort by...</option>
+            <option value="rating-asc">Rating (Low → High)</option>
+            <option value="rating-desc">Rating (High → Low)</option>
+            <option value="year-asc">Year (Oldest → Newest)</option>
+            <option value="year-desc">Year (Newest → Oldest)</option>
+          </select>
+          <button id="loadMovies" class="action-btn" style="flex: 1; min-width: 120px;">Load Movies</button>
+        </div>
+        <table id="movieTable">
+          <thead>
+            <tr>
+              <th>Poster</th>
+              <th>Title</th>
+              <th>Director</th>
+              <th>Year</th>
+              <th>Rating</th>
+              <th>Watched</th>
+              <th>Review</th>
+              <th>IMDb</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <table id="movieTable">
-        <thead>
-          <tr>
-            <th>Poster</th>
-            <th>Title</th>
-            <th>Director</th>
-            <th>Year</th>
-            <th>Rating</th>
-            <th>Watched</th>
-            <th>Review</th>
-            <th>IMDb</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    </div>
+
+    <!-- TV Shows Tab Content -->
+    <div id="tv-shows-tab" class="tab-content">
+      <div class="card">
+        <h2>Add TV Show</h2>
+        <form id="addTVShowForm">
+          <div>
+            <input type="text" id="tvTitle" placeholder="Title" required>
+          </div>
+          <div>
+            <input type="number" id="tvYear" placeholder="Year" required>
+          </div>
+          <div>
+            <input type="number" id="tvSeasons" placeholder="Seasons (optional)">
+          </div>
+          <div>
+            <input type="number" id="tvEpisodes" placeholder="Episodes (optional)">
+          </div>
+          <div>
+            <input type="number" step="0.1" id="tvRating" placeholder="Rating">
+          </div>
+          <div>
+            <label>Watched <input type="checkbox" id="tvWatched"></label>
+          </div>
+          <div>
+            <input type="text" id="tvReview" placeholder="Review (optional)">
+          </div>
+          <button type="submit" class="action-btn">Add TV Show</button>
+        </form>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h2 style="margin: 0;">TV Shows</h2>
+          <span id="tvShowCount" style="font-weight: bold;"></span>
+        </div>
+        <div style="display:flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="tvSearch" placeholder="Search by title" style="flex: 2; min-width: 200px;">
+          <select id="tvSort" style="flex: 1; min-width: 200px;">
+            <option value="">Sort by...</option>
+            <option value="rating-asc">Rating (Low → High)</option>
+            <option value="rating-desc">Rating (High → Low)</option>
+            <option value="year-asc">Year (Oldest → Newest)</option>
+            <option value="year-desc">Year (Newest → Oldest)</option>
+          </select>
+          <button id="loadTVShows" class="action-btn" style="flex: 1; min-width: 120px;">Load TV Shows</button>
+        </div>
+        <table id="tvShowTable">
+          <thead>
+            <tr>
+              <th>Poster</th>
+              <th>Title</th>
+              <th>Year</th>
+              <th>Seasons</th>
+              <th>Episodes</th>
+              <th>Rating</th>
+              <th>Watched</th>
+              <th>Review</th>
+              <th>IMDb</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
   <script src="credentials.js"></script>
@@ -292,12 +402,31 @@
 
     let editingRowId = null;
     let editingRowElement = null;
+    let currentTab = 'movies';
 
-    function disableOtherRowButtons(currentRow) {
-      const buttons = document.querySelectorAll('#movieTable button.action-btn');
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      currentTab = tabName;
+      
+      // Load data for the active tab
+      if (tabName === 'movies') {
+        loadMovies();
+      } else if (tabName === 'tv-shows') {
+        loadTVShows();
+      }
+    }
+
+    function disableOtherRowButtons(currentRow, tableId) {
+      const buttons = document.querySelectorAll(`#${tableId} button.action-btn`);
       buttons.forEach(btn => {
-        // Determine the row for each button.  Only disable buttons
-        // belonging to rows other than the current editing row.
         const btnRow = btn.closest('tr');
         if (!btnRow.isSameNode(currentRow)) {
           btn.disabled = true;
@@ -305,21 +434,24 @@
       });
     }
 
-    function enableAllRowButtons() {
-      const buttons = document.querySelectorAll('#movieTable button.action-btn');
+    function enableAllRowButtons(tableId) {
+      const buttons = document.querySelectorAll(`#${tableId} button.action-btn`);
       buttons.forEach(btn => {
         btn.disabled = false;
       });
     }
+
+    // Dark mode toggle
     document.getElementById('toggleMode').addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       const btn = document.getElementById('toggleMode');
       btn.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Night Mode';
     });
 
+    // Movie functions
     async function loadMovies() {
-      const search = document.getElementById('search').value;
-      const sortVal = document.getElementById('sort').value;
+      const search = document.getElementById('movieSearch').value;
+      const sortVal = document.getElementById('movieSort').value;
       let sortField = '';
       let order = '';
       if (sortVal) {
@@ -341,7 +473,7 @@
         movies.forEach((movie) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td id="poster-${movie.id}"></td>
+            <td id="movie-poster-${movie.id}"></td>
             <td>${movie.title}</td>
             <td>${movie.director}</td>
             <td>${movie.year}</td>
@@ -350,42 +482,66 @@
             <td>${movie.review ? movie.review : ''}</td>
             <td><a href="https://www.imdb.com/find?q=${encodeURIComponent(movie.title)}" target="_blank">Search</a></td>
             <td>
-              <button class="action-btn" onclick="enableRowEdit(this, ${movie.id}, '${encodeURIComponent(movie.title)}', '${encodeURIComponent(movie.director)}', ${movie.year}, ${movie.rating ?? 'null'}, ${movie.watched}, '${movie.review ? encodeURIComponent(movie.review) : ''}')">Edit</button>
+              <button class="action-btn" onclick="enableMovieEdit(this, ${movie.id}, '${encodeURIComponent(movie.title)}', '${encodeURIComponent(movie.director)}', ${movie.year}, ${movie.rating ?? 'null'}, ${movie.watched}, '${movie.review ? encodeURIComponent(movie.review) : ''}')">Edit</button>
               <button class="action-btn" onclick="deleteMovie(${movie.id})">Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
-          if (OMDB_API_KEY) {
-            fetchPoster(movie.id, movie.title, movie.year);
+          
+          // Display cached poster or fetch new one
+          if (movie.poster_url) {
+            displayMoviePoster(movie.id, movie.poster_url);
+          } else if (OMDB_API_KEY) {
+            fetchMoviePoster(movie.id, movie.title, movie.year);
           }
         });
       }
     }
 
-    async function fetchPoster(id, title, year) {
+    function displayMoviePoster(id, posterUrl) {
+      const cell = document.getElementById(`movie-poster-${id}`);
+      if (cell && posterUrl) {
+        cell.innerHTML = `<img src="${posterUrl}" alt="Poster" style="width: 60px; max-height: 90px; object-fit: cover; border-radius: 4px;">`;
+      }
+    }
+
+    async function fetchMoviePoster(id, title, year) {
       try {
         const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&y=${encodeURIComponent(year)}&apikey=${OMDB_API_KEY}`;
         const res = await fetch(url);
         if (!res.ok) return;
         const data = await res.json();
         if (data && data.Poster && data.Poster !== 'N/A') {
-          const cell = document.getElementById(`poster-${id}`);
-          if (cell) {
-            cell.innerHTML = `<img src="${data.Poster}" alt="Poster" style="width: 60px; max-height: 90px; object-fit: cover; border-radius: 4px;">`;
-          }
+          // Save the poster URL to the database
+          await saveMoviePosterUrl(id, data.Poster);
+          // Display the poster
+          displayMoviePoster(id, data.Poster);
         }
       } catch (err) {
+        console.error('Error fetching movie poster:', err);
       }
     }
-    document.getElementById('loadMovies').addEventListener('click', loadMovies);
+
+    async function saveMoviePosterUrl(id, posterUrl) {
+      try {
+        await fetch(`${API_BASE}/movies/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ poster_url: posterUrl }),
+        });
+      } catch (err) {
+        console.error('Error saving poster URL:', err);
+      }
+    }
+
     async function deleteMovie(id) {
       if (!confirm('Are you sure you want to delete this movie?')) return;
       const res = await fetch(`${API_BASE}/movies/${id}`, { method: 'DELETE' });
       if (res.ok) loadMovies();
     }
 
-    window.enableRowEdit = function (btn, id, encTitle, encDirector, year, rating, watched, encReview) {
-      if (editingRowId !== null) return; // only allow one row in edit mode
+    window.enableMovieEdit = function (btn, id, encTitle, encDirector, year, rating, watched, encReview) {
+      if (editingRowId !== null) return;
       editingRowId = id;
       const row = btn.closest('tr');
       editingRowElement = row;
@@ -393,31 +549,30 @@
       const director = decodeURIComponent(encDirector);
       const ratingVal = (rating !== null && rating !== 'null') ? rating : '';
       const review = encReview ? decodeURIComponent(encReview) : '';
-      row.cells[1].innerHTML = `<input type="text" id="edit-title" value="${title}">`;
-      row.cells[2].innerHTML = `<input type="text" id="edit-director" value="${director}">`;
-      row.cells[3].innerHTML = `<input type="number" id="edit-year" value="${year}">`;
-      row.cells[4].innerHTML = `<input type="number" step="0.1" id="edit-rating" value="${ratingVal}">`;
-      row.cells[5].innerHTML = `<input type="checkbox" id="edit-watched" ${watched ? 'checked' : ''}>`;
-      row.cells[6].innerHTML = `<input type="text" id="edit-review" value="${review}">`;
+      row.cells[1].innerHTML = `<input type="text" id="edit-movie-title" value="${title}">`;
+      row.cells[2].innerHTML = `<input type="text" id="edit-movie-director" value="${director}">`;
+      row.cells[3].innerHTML = `<input type="number" id="edit-movie-year" value="${year}">`;
+      row.cells[4].innerHTML = `<input type="number" step="0.1" id="edit-movie-rating" value="${ratingVal}">`;
+      row.cells[5].innerHTML = `<input type="checkbox" id="edit-movie-watched" ${watched ? 'checked' : ''}>`;
+      row.cells[6].innerHTML = `<input type="text" id="edit-movie-review" value="${review}">`;
       row.cells[8].innerHTML = `
-        <button class="action-btn" onclick="saveRowEdit(${id})">Save</button>
-        <button class="action-btn" onclick="cancelRowEdit()">Cancel</button>
+        <button class="action-btn" onclick="saveMovieEdit(${id})">Save</button>
+        <button class="action-btn" onclick="cancelMovieEdit()">Cancel</button>
       `;
-
-      disableOtherRowButtons(row);
+      disableOtherRowButtons(row, 'movieTable');
     };
 
-    window.saveRowEdit = async function (id) {
+    window.saveMovieEdit = async function (id) {
       if (editingRowId !== id) return;
       const updated = {
-        title: document.getElementById('edit-title').value,
-        director: document.getElementById('edit-director').value,
-        year: parseInt(document.getElementById('edit-year').value, 10),
-        watched: document.getElementById('edit-watched').checked,
+        title: document.getElementById('edit-movie-title').value,
+        director: document.getElementById('edit-movie-director').value,
+        year: parseInt(document.getElementById('edit-movie-year').value, 10),
+        watched: document.getElementById('edit-movie-watched').checked,
       };
-      const ratingVal = document.getElementById('edit-rating').value;
+      const ratingVal = document.getElementById('edit-movie-rating').value;
       if (ratingVal) updated.rating = parseFloat(ratingVal);
-      const reviewVal = document.getElementById('edit-review') ? document.getElementById('edit-review').value : '';
+      const reviewVal = document.getElementById('edit-movie-review') ? document.getElementById('edit-movie-review').value : '';
       if (reviewVal !== undefined) updated.review = reviewVal;
       const res = await fetch(`${API_BASE}/movies/${id}`, {
         method: 'PUT',
@@ -427,41 +582,223 @@
       if (res.ok) {
         editingRowId = null;
         editingRowElement = null;
-        enableAllRowButtons();
+        enableAllRowButtons('movieTable');
         loadMovies();
       }
     };
 
-    window.cancelRowEdit = function () {
+    window.cancelMovieEdit = function () {
       editingRowId = null;
       editingRowElement = null;
-      enableAllRowButtons();
+      enableAllRowButtons('movieTable');
       loadMovies();
     };
-    document.getElementById('addForm').onsubmit = async function (e) {
+
+    // TV Show functions
+    async function loadTVShows() {
+      const search = document.getElementById('tvSearch').value;
+      const sortVal = document.getElementById('tvSort').value;
+      let sortField = '';
+      let order = '';
+      if (sortVal) {
+        const parts = sortVal.split('-');
+        sortField = parts[0];
+        order = parts[1] || '';
+      }
+      let url = `${API_BASE}/tv-shows/?`;
+      if (search) url += `search=${encodeURIComponent(search)}&`;
+      if (sortField) url += `sort_by=${encodeURIComponent(sortField)}&`;
+      if (order) url += `order=${encodeURIComponent(order)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const tvShows = await res.json();
+        const tbody = document.querySelector('#tvShowTable tbody');
+        tbody.innerHTML = '';
+        const countElem = document.getElementById('tvShowCount');
+        if (countElem) countElem.textContent = `${tvShows.length} TV Shows`;
+        tvShows.forEach((tvShow) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td id="tv-poster-${tvShow.id}"></td>
+            <td>${tvShow.title}</td>
+            <td>${tvShow.year}</td>
+            <td>${tvShow.seasons ?? ''}</td>
+            <td>${tvShow.episodes ?? ''}</td>
+            <td>${tvShow.rating ?? ''}</td>
+            <td>${tvShow.watched}</td>
+            <td>${tvShow.review ? tvShow.review : ''}</td>
+            <td><a href="https://www.imdb.com/find?q=${encodeURIComponent(tvShow.title)}" target="_blank">Search</a></td>
+            <td>
+              <button class="action-btn" onclick="enableTVEdit(this, ${tvShow.id}, '${encodeURIComponent(tvShow.title)}', ${tvShow.year}, ${tvShow.seasons ?? 'null'}, ${tvShow.episodes ?? 'null'}, ${tvShow.rating ?? 'null'}, ${tvShow.watched}, '${tvShow.review ? encodeURIComponent(tvShow.review) : ''}')">Edit</button>
+              <button class="action-btn" onclick="deleteTVShow(${tvShow.id})">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+          
+          // Display cached poster or fetch new one
+          if (tvShow.poster_url) {
+            displayTVPoster(tvShow.id, tvShow.poster_url);
+          } else if (OMDB_API_KEY) {
+            fetchTVPoster(tvShow.id, tvShow.title, tvShow.year);
+          }
+        });
+      }
+    }
+
+    function displayTVPoster(id, posterUrl) {
+      const cell = document.getElementById(`tv-poster-${id}`);
+      if (cell && posterUrl) {
+        cell.innerHTML = `<img src="${posterUrl}" alt="Poster" style="width: 60px; max-height: 90px; object-fit: cover; border-radius: 4px;">`;
+      }
+    }
+
+    async function fetchTVPoster(id, title, year) {
+      try {
+        const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&y=${encodeURIComponent(year)}&apikey=${OMDB_API_KEY}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.Poster && data.Poster !== 'N/A') {
+          // Save the poster URL to the database
+          await saveTVPosterUrl(id, data.Poster);
+          // Display the poster
+          displayTVPoster(id, data.Poster);
+        }
+      } catch (err) {
+        console.error('Error fetching TV show poster:', err);
+      }
+    }
+
+    async function saveTVPosterUrl(id, posterUrl) {
+      try {
+        await fetch(`${API_BASE}/tv-shows/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ poster_url: posterUrl }),
+        });
+      } catch (err) {
+        console.error('Error saving TV show poster URL:', err);
+      }
+    }
+
+    async function deleteTVShow(id) {
+      if (!confirm('Are you sure you want to delete this TV show?')) return;
+      const res = await fetch(`${API_BASE}/tv-shows/${id}`, { method: 'DELETE' });
+      if (res.ok) loadTVShows();
+    }
+
+    window.enableTVEdit = function (btn, id, encTitle, year, seasons, episodes, rating, watched, encReview) {
+      if (editingRowId !== null) return;
+      editingRowId = id;
+      const row = btn.closest('tr');
+      editingRowElement = row;
+      const title = decodeURIComponent(encTitle);
+      const ratingVal = (rating !== null && rating !== 'null') ? rating : '';
+      const review = encReview ? decodeURIComponent(encReview) : '';
+      row.cells[1].innerHTML = `<input type="text" id="edit-tv-title" value="${title}">`;
+      row.cells[2].innerHTML = `<input type="number" id="edit-tv-year" value="${year}">`;
+      row.cells[3].innerHTML = `<input type="number" id="edit-tv-seasons" value="${seasons !== 'null' ? seasons : ''}">`;
+      row.cells[4].innerHTML = `<input type="number" id="edit-tv-episodes" value="${episodes !== 'null' ? episodes : ''}">`;
+      row.cells[5].innerHTML = `<input type="number" step="0.1" id="edit-tv-rating" value="${ratingVal}">`;
+      row.cells[6].innerHTML = `<input type="checkbox" id="edit-tv-watched" ${watched ? 'checked' : ''}>`;
+      row.cells[7].innerHTML = `<input type="text" id="edit-tv-review" value="${review}">`;
+      row.cells[9].innerHTML = `
+        <button class="action-btn" onclick="saveTVEdit(${id})">Save</button>
+        <button class="action-btn" onclick="cancelTVEdit()">Cancel</button>
+      `;
+      disableOtherRowButtons(row, 'tvShowTable');
+    };
+
+    window.saveTVEdit = async function (id) {
+      if (editingRowId !== id) return;
+      const updated = {
+        title: document.getElementById('edit-tv-title').value,
+        year: parseInt(document.getElementById('edit-tv-year').value, 10),
+        watched: document.getElementById('edit-tv-watched').checked,
+      };
+      const seasonsVal = document.getElementById('edit-tv-seasons').value;
+      if (seasonsVal) updated.seasons = parseInt(seasonsVal, 10);
+      const episodesVal = document.getElementById('edit-tv-episodes').value;
+      if (episodesVal) updated.episodes = parseInt(episodesVal, 10);
+      const ratingVal = document.getElementById('edit-tv-rating').value;
+      if (ratingVal) updated.rating = parseFloat(ratingVal);
+      const reviewVal = document.getElementById('edit-tv-review') ? document.getElementById('edit-tv-review').value : '';
+      if (reviewVal !== undefined) updated.review = reviewVal;
+      const res = await fetch(`${API_BASE}/tv-shows/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        editingRowId = null;
+        editingRowElement = null;
+        enableAllRowButtons('tvShowTable');
+        loadTVShows();
+      }
+    };
+
+    window.cancelTVEdit = function () {
+      editingRowId = null;
+      editingRowElement = null;
+      enableAllRowButtons('tvShowTable');
+      loadTVShows();
+    };
+
+    // Form submissions
+    document.getElementById('addMovieForm').onsubmit = async function (e) {
       e.preventDefault();
       const movie = {
-        title: document.getElementById('title').value,
-        director: document.getElementById('director').value,
-        year: parseInt(document.getElementById('year').value, 10),
-        watched: document.getElementById('watched').checked,
+        title: document.getElementById('movieTitle').value,
+        director: document.getElementById('movieDirector').value,
+        year: parseInt(document.getElementById('movieYear').value, 10),
+        watched: document.getElementById('movieWatched').checked,
       };
-      const ratingVal = document.getElementById('rating').value;
+      const ratingVal = document.getElementById('movieRating').value;
       if (ratingVal) movie.rating = parseFloat(ratingVal);
-      const reviewValCreate = document.getElementById('review').value;
-      if (reviewValCreate) movie.review = reviewValCreate;
+      const reviewVal = document.getElementById('movieReview').value;
+      if (reviewVal) movie.review = reviewVal;
       const response = await fetch(`${API_BASE}/movies/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(movie),
       });
       if (response.ok) {
-        document.getElementById('addForm').reset();
+        document.getElementById('addMovieForm').reset();
         loadMovies();
-        const submitBtn = document.querySelector('#addForm button[type="submit"]');
-        if (submitBtn) submitBtn.textContent = 'Add';
       }
     };
+
+    document.getElementById('addTVShowForm').onsubmit = async function (e) {
+      e.preventDefault();
+      const tvShow = {
+        title: document.getElementById('tvTitle').value,
+        year: parseInt(document.getElementById('tvYear').value, 10),
+        watched: document.getElementById('tvWatched').checked,
+      };
+      const seasonsVal = document.getElementById('tvSeasons').value;
+      if (seasonsVal) tvShow.seasons = parseInt(seasonsVal, 10);
+      const episodesVal = document.getElementById('tvEpisodes').value;
+      if (episodesVal) tvShow.episodes = parseInt(episodesVal, 10);
+      const ratingVal = document.getElementById('tvRating').value;
+      if (ratingVal) tvShow.rating = parseFloat(ratingVal);
+      const reviewVal = document.getElementById('tvReview').value;
+      if (reviewVal) tvShow.review = reviewVal;
+      const response = await fetch(`${API_BASE}/tv-shows/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tvShow),
+      });
+      if (response.ok) {
+        document.getElementById('addTVShowForm').reset();
+        loadTVShows();
+      }
+    };
+
+    // Event listeners
+    document.getElementById('loadMovies').addEventListener('click', loadMovies);
+    document.getElementById('loadTVShows').addEventListener('click', loadTVShows);
+
+    // Load initial data
     loadMovies();
   </script>
 </body>

@@ -1,7 +1,7 @@
 """
 CRUD utility functions for the Movie Tracker API.
 Encapsulates database operations for fetching, creating, updating,
-and deleting movie entries.
+and deleting movie and TV show entries.
 """
 from typing import List, Optional
 from sqlalchemy.orm import Session
@@ -63,3 +63,58 @@ def delete_movie(db: Session, movie_id: int) -> Optional[models.Movie]:
     db.delete(db_movie)
     db.commit()
     return db_movie
+
+
+# TV Show CRUD operations
+def get_tv_shows(
+    db: Session,
+    search: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    order: Optional[str] = None,
+) -> List[models.TVShow]:
+    query = db.query(models.TVShow)
+    if search:
+        like_pattern = f"%{search}%"
+        query = query.filter(
+            models.TVShow.title.ilike(like_pattern)
+        )
+    sort_order = asc  # default
+    if order and order.lower() == "desc":
+        sort_order = desc
+    if sort_by == "rating":
+        query = query.order_by(sort_order(models.TVShow.rating))
+    elif sort_by == "year":
+        query = query.order_by(sort_order(models.TVShow.year))
+    return query.all()
+
+
+def get_tv_show_by_id(db: Session, tv_show_id: int) -> Optional[models.TVShow]:
+    return db.query(models.TVShow).filter(models.TVShow.id == tv_show_id).first()
+
+
+def create_tv_show(db: Session, tv_show: schemas.TVShowCreate) -> models.TVShow:
+    db_tv_show = models.TVShow(**tv_show.dict())
+    db.add(db_tv_show)
+    db.commit()
+    db.refresh(db_tv_show)
+    return db_tv_show
+
+
+def update_tv_show(db: Session, tv_show_id: int, tv_show_update: schemas.TVShowUpdate) -> Optional[models.TVShow]:
+    db_tv_show = get_tv_show_by_id(db, tv_show_id)
+    if db_tv_show is None:
+        return None
+    for field, value in tv_show_update.dict(exclude_unset=True).items():
+        setattr(db_tv_show, field, value)
+    db.commit()
+    db.refresh(db_tv_show)
+    return db_tv_show
+
+
+def delete_tv_show(db: Session, tv_show_id: int) -> Optional[models.TVShow]:
+    db_tv_show = get_tv_show_by_id(db, tv_show_id)
+    if db_tv_show is None:
+        return None
+    db.delete(db_tv_show)
+    db.commit()
+    return db_tv_show
