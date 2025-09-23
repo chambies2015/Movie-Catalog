@@ -165,6 +165,7 @@
       padding: 12px;
       border: 1px solid #ddd;
       vertical-align: middle;
+      text-align: center;
     }
     /* Make review column wider and wrap nicely */
     #movieTable th:nth-child(7),
@@ -284,7 +285,7 @@
             <input type="number" id="movieYear" placeholder="Year" required>
           </div>
           <div>
-            <input type="number" step="0.1" id="movieRating" placeholder="Rating">
+            <input type="number" min="0" max="10" id="movieRating" placeholder="Rating (0-10)">
           </div>
           <div>
             <label>Watched <input type="checkbox" id="movieWatched"></label>
@@ -348,7 +349,7 @@
             <input type="number" id="tvEpisodes" placeholder="Episodes (optional)">
           </div>
           <div>
-            <input type="number" step="0.1" id="tvRating" placeholder="Rating">
+            <input type="number" min="0" max="10" id="tvRating" placeholder="Rating (0-10)">
           </div>
           <div>
             <label>Watched <input type="checkbox" id="tvWatched"></label>
@@ -477,7 +478,7 @@
             <td>${movie.title}</td>
             <td>${movie.director}</td>
             <td>${movie.year}</td>
-            <td>${movie.rating ?? ''}</td>
+            <td>${movie.rating !== null && movie.rating !== undefined ? movie.rating + '/10' : ''}</td>
             <td>${movie.watched}</td>
             <td>${movie.review ? movie.review : ''}</td>
             <td><a href="https://www.imdb.com/find?q=${encodeURIComponent(movie.title)}" target="_blank">Search</a></td>
@@ -552,7 +553,7 @@
       row.cells[1].innerHTML = `<input type="text" id="edit-movie-title" value="${title}">`;
       row.cells[2].innerHTML = `<input type="text" id="edit-movie-director" value="${director}">`;
       row.cells[3].innerHTML = `<input type="number" id="edit-movie-year" value="${year}">`;
-      row.cells[4].innerHTML = `<input type="number" step="0.1" id="edit-movie-rating" value="${ratingVal}">`;
+      row.cells[4].innerHTML = `<input type="number" min="0" max="10" id="edit-movie-rating" value="${ratingVal}">`;
       row.cells[5].innerHTML = `<input type="checkbox" id="edit-movie-watched" ${watched ? 'checked' : ''}>`;
       row.cells[6].innerHTML = `<input type="text" id="edit-movie-review" value="${review}">`;
       row.cells[8].innerHTML = `
@@ -571,7 +572,7 @@
         watched: document.getElementById('edit-movie-watched').checked,
       };
       const ratingVal = document.getElementById('edit-movie-rating').value;
-      if (ratingVal) updated.rating = parseFloat(ratingVal);
+      if (ratingVal) updated.rating = parseInt(ratingVal, 10);
       const reviewVal = document.getElementById('edit-movie-review') ? document.getElementById('edit-movie-review').value : '';
       if (reviewVal !== undefined) updated.review = reviewVal;
       const res = await fetch(`${API_BASE}/movies/${id}`, {
@@ -624,7 +625,7 @@
             <td>${tvShow.year}</td>
             <td>${tvShow.seasons ?? ''}</td>
             <td>${tvShow.episodes ?? ''}</td>
-            <td>${tvShow.rating ?? ''}</td>
+            <td>${tvShow.rating !== null && tvShow.rating !== undefined ? tvShow.rating + '/10' : ''}</td>
             <td>${tvShow.watched}</td>
             <td>${tvShow.review ? tvShow.review : ''}</td>
             <td><a href="https://www.imdb.com/find?q=${encodeURIComponent(tvShow.title)}" target="_blank">Search</a></td>
@@ -699,7 +700,7 @@
       row.cells[2].innerHTML = `<input type="number" id="edit-tv-year" value="${year}">`;
       row.cells[3].innerHTML = `<input type="number" id="edit-tv-seasons" value="${seasons !== 'null' ? seasons : ''}">`;
       row.cells[4].innerHTML = `<input type="number" id="edit-tv-episodes" value="${episodes !== 'null' ? episodes : ''}">`;
-      row.cells[5].innerHTML = `<input type="number" step="0.1" id="edit-tv-rating" value="${ratingVal}">`;
+      row.cells[5].innerHTML = `<input type="number" min="0" max="10" id="edit-tv-rating" value="${ratingVal}">`;
       row.cells[6].innerHTML = `<input type="checkbox" id="edit-tv-watched" ${watched ? 'checked' : ''}>`;
       row.cells[7].innerHTML = `<input type="text" id="edit-tv-review" value="${review}">`;
       row.cells[9].innerHTML = `
@@ -721,7 +722,7 @@
       const episodesVal = document.getElementById('edit-tv-episodes').value;
       if (episodesVal) updated.episodes = parseInt(episodesVal, 10);
       const ratingVal = document.getElementById('edit-tv-rating').value;
-      if (ratingVal) updated.rating = parseFloat(ratingVal);
+      if (ratingVal) updated.rating = parseInt(ratingVal, 10);
       const reviewVal = document.getElementById('edit-tv-review') ? document.getElementById('edit-tv-review').value : '';
       if (reviewVal !== undefined) updated.review = reviewVal;
       const res = await fetch(`${API_BASE}/tv-shows/${id}`, {
@@ -754,7 +755,7 @@
         watched: document.getElementById('movieWatched').checked,
       };
       const ratingVal = document.getElementById('movieRating').value;
-      if (ratingVal) movie.rating = parseFloat(ratingVal);
+      if (ratingVal) movie.rating = parseInt(ratingVal, 10);
       const reviewVal = document.getElementById('movieReview').value;
       if (reviewVal) movie.review = reviewVal;
       const response = await fetch(`${API_BASE}/movies/`, {
@@ -780,7 +781,7 @@
       const episodesVal = document.getElementById('tvEpisodes').value;
       if (episodesVal) tvShow.episodes = parseInt(episodesVal, 10);
       const ratingVal = document.getElementById('tvRating').value;
-      if (ratingVal) tvShow.rating = parseFloat(ratingVal);
+      if (ratingVal) tvShow.rating = parseInt(ratingVal, 10);
       const reviewVal = document.getElementById('tvReview').value;
       if (reviewVal) tvShow.review = reviewVal;
       const response = await fetch(`${API_BASE}/tv-shows/`, {
