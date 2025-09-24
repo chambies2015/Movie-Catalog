@@ -311,7 +311,10 @@
             <option value="year-desc">Year (Newest → Oldest)</option>
           </select>
           <button id="loadMovies" class="action-btn" style="flex: 1; min-width: 120px;">Load Movies</button>
+          <button id="exportMovies" class="action-btn" style="flex: 1; min-width: 120px; background-color: #4caf50;">Export Data</button>
+          <button id="importMovies" class="action-btn" style="flex: 1; min-width: 120px; background-color: #ff9800;">Import Data</button>
         </div>
+        <input type="file" id="importFile" accept=".json" style="display: none;">
         <table id="movieTable">
           <thead>
             <tr>
@@ -375,7 +378,10 @@
             <option value="year-desc">Year (Newest → Oldest)</option>
           </select>
           <button id="loadTVShows" class="action-btn" style="flex: 1; min-width: 120px;">Load TV Shows</button>
+          <button id="exportTVShows" class="action-btn" style="flex: 1; min-width: 120px; background-color: #4caf50;">Export Data</button>
+          <button id="importTVShows" class="action-btn" style="flex: 1; min-width: 120px; background-color: #ff9800;">Import Data</button>
         </div>
+        <input type="file" id="importTVFile" accept=".json" style="display: none;">
         <table id="tvShowTable">
           <thead>
             <tr>
@@ -795,9 +801,92 @@
       }
     };
 
+    // Export/Import functions
+    async function exportData() {
+      try {
+        const response = await fetch(`${API_BASE}/export/`);
+        if (!response.ok) {
+          throw new Error('Export failed');
+        }
+        
+        const data = await response.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `streamtracker-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert(`Export successful! Exported ${data.export_metadata.total_movies} movies and ${data.export_metadata.total_tv_shows} TV shows.`);
+      } catch (error) {
+        alert('Export failed: ' + error.message);
+      }
+    }
+
+    async function importData(fileInput) {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      if (!file.name.endsWith('.json')) {
+        alert('Please select a JSON file.');
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${API_BASE}/import/file/`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Import failed');
+        }
+        
+        const result = await response.json();
+        let message = `Import completed!\n`;
+        message += `Movies: ${result.movies_created} created, ${result.movies_updated} updated\n`;
+        message += `TV Shows: ${result.tv_shows_created} created, ${result.tv_shows_updated} updated`;
+        
+        if (result.errors.length > 0) {
+          message += `\n\nErrors:\n${result.errors.join('\n')}`;
+        }
+        
+        alert(message);
+        
+        // Refresh the current tab
+        if (currentTab === 'movies') {
+          loadMovies();
+        } else if (currentTab === 'tv-shows') {
+          loadTVShows();
+        }
+        
+        // Clear the file input
+        fileInput.value = '';
+      } catch (error) {
+        alert('Import failed: ' + error.message);
+        fileInput.value = '';
+      }
+    }
+
     // Event listeners
     document.getElementById('loadMovies').addEventListener('click', loadMovies);
     document.getElementById('loadTVShows').addEventListener('click', loadTVShows);
+    
+    // Export/Import event listeners
+    document.getElementById('exportMovies').addEventListener('click', exportData);
+    document.getElementById('exportTVShows').addEventListener('click', exportData);
+    document.getElementById('importMovies').addEventListener('click', () => document.getElementById('importFile').click());
+    document.getElementById('importTVShows').addEventListener('click', () => document.getElementById('importTVFile').click());
+    document.getElementById('importFile').addEventListener('change', (e) => importData(e.target));
+    document.getElementById('importTVFile').addEventListener('change', (e) => importData(e.target));
 
     // Load initial data
     loadMovies();

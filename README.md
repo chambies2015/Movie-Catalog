@@ -13,6 +13,7 @@ StreamTracker is an evolution of my original Movie Catalog project. It provides 
 - **CORS enabled:** The API is configured to accept requests from your local UI or other clients.
 - **Modern UI:** A standalone HTML file (see `movie_tracker_ui.html`) lets you interact with the API. It supports light and dark modes and a sleek, responsive design.
 - **Poster caching:** Automatically fetches and caches movie/TV show posters to avoid API rate limits.
+- **Export/Import functionality:** Export all your data to JSON format or import data from JSON files with conflict resolution.
 
 ## Running the API
 
@@ -30,6 +31,29 @@ StreamTracker is an evolution of my original Movie Catalog project. It provides 
 
    The UI will automatically open in default browswer 5 seconds after uvicorn server startup.
 
+## Export/Import Functionality
+
+StreamTracker now includes powerful export/import capabilities:
+
+### Exporting Data
+- Click the **"Export Data"** button in either the Movies or TV Shows tab
+- Your entire collection will be downloaded as a JSON file with timestamp
+- The export includes all metadata: titles, directors, years, ratings, reviews, watched status, and poster URLs
+- Export files are named `streamtracker-export-YYYY-MM-DD.json`
+
+### Importing Data
+- Click the **"Import Data"** button in either tab to select a JSON file
+- The system will automatically detect and import movies and TV shows
+- **Smart conflict resolution**: Existing entries (matched by title + director for movies, title + year for TV shows) will be updated rather than duplicated
+- Import results show how many items were created vs updated
+- Any errors during import are reported for easy troubleshooting
+
+### API Endpoints
+The export/import functionality is also available via API:
+- `GET /export/` - Export all data as JSON
+- `POST /import/` - Import data from JSON payload
+- `POST /import/file/` - Import data from uploaded JSON file
+
 ## Using the UI
 
 The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker:
@@ -40,6 +64,7 @@ The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker
 - **Night mode:** Toggle between light and dark themes.
 - **Poster caching:** Automatically fetches and caches movie/TV show posters for instant loading.
 - **Tabbed interface:** Switch between Movies and TV Shows with dedicated sections.
+- **Export/Import:** Export your entire collection to JSON or import data from JSON files with smart conflict resolution.
 
 # Preview:
 <img width="2116" height="1946" alt="image" src="https://github.com/user-attachments/assets/fb2b28ed-7cf7-4ab1-b2c4-2bbf056d4f17" />
@@ -49,10 +74,10 @@ The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker
 - [x] **Add notes/review section**
 - [x] **TV Shows compatibility**
 - [x] **Poster caching system**
+- [x] **Export/import functionality**
 - [ ] **Migrate to server/client setup**
 - [ ] **Account creation/login**
 - [ ] **Add friends to check each other's lists**
 - [ ] **Security implementation**
 - [ ] **Enhanced search and filtering**
-- [ ] **Export/import functionality**
 

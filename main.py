@@ -3,9 +3,12 @@ Entry point for the StreamTracker API.
 Provides CRUD endpoints for managing movies and TV shows.
 """
 from typing import List, Optional
+from datetime import datetime
+import json
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect, text
 
@@ -187,3 +190,81 @@ async def delete_tv_show(tv_show_id: int, db: Session = Depends(get_db)):
     if db_tv_show is None:
         raise HTTPException(status_code=404, detail="TV Show not found")
     return db_tv_show
+
+
+# Export/Import endpoints
+@app.get("/export/", response_model=schemas.ExportData, tags=["export-import"])
+async def export_data(db: Session = Depends(get_db)):
+    """Export all movies and TV shows as JSON"""
+    movies = crud.get_all_movies(db)
+    tv_shows = crud.get_all_tv_shows(db)
+    
+    export_metadata = {
+        "export_timestamp": datetime.now().isoformat(),
+        "version": "1.0",
+        "total_movies": len(movies),
+        "total_tv_shows": len(tv_shows)
+    }
+    
+    return schemas.ExportData(
+        movies=movies,
+        tv_shows=tv_shows,
+        export_metadata=export_metadata
+    )
+
+
+@app.post("/import/", response_model=schemas.ImportResult, tags=["export-import"])
+async def import_data(import_data: schemas.ImportData, db: Session = Depends(get_db)):
+    """Import movies and TV shows from JSON data"""
+    movies_created, movies_updated, movie_errors = crud.import_movies(db, import_data.movies)
+    tv_shows_created, tv_shows_updated, tv_show_errors = crud.import_tv_shows(db, import_data.tv_shows)
+    
+    all_errors = movie_errors + tv_show_errors
+    
+    return schemas.ImportResult(
+        movies_created=movies_created,
+        movies_updated=movies_updated,
+        tv_shows_created=tv_shows_created,
+        tv_shows_updated=tv_shows_updated,
+        errors=all_errors
+    )
+
+
+@app.post("/import/file/", response_model=schemas.ImportResult, tags=["export-import"])
+async def import_from_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Import data from a JSON file upload"""
+    if not file.filename.endswith('.json'):
+        raise HTTPException(status_code=400, detail="File must be a JSON file")
+    
+    try:
+        content = await file.read()
+        data = json.loads(content.decode('utf-8'))
+        
+        # Validate the imported data structure
+        if 'movies' not in data or 'tv_shows' not in data:
+            raise HTTPException(status_code=400, detail="Invalid file format. Expected 'movies' and 'tv_shows' arrays.")
+        
+        # Convert to Pydantic models
+        movies = [schemas.MovieCreate(**movie) for movie in data.get('movies', [])]
+        tv_shows = [schemas.TVShowCreate(**tv_show) for tv_show in data.get('tv_shows', [])]
+        
+        import_data = schemas.ImportData(movies=movies, tv_shows=tv_shows)
+        
+        # Import the data
+        movies_created, movies_updated, movie_errors = crud.import_movies(db, import_data.movies)
+        tv_shows_created, tv_shows_updated, tv_show_errors = crud.import_tv_shows(db, import_data.tv_shows)
+        
+        all_errors = movie_errors + tv_show_errors
+        
+        return schemas.ImportResult(
+            movies_created=movies_created,
+            movies_updated=movies_updated,
+            tv_shows_created=tv_shows_created,
+            tv_shows_updated=tv_shows_updated,
+            errors=all_errors
+        )
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")

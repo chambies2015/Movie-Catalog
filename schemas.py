@@ -2,7 +2,7 @@
 Pydantic models (schemas) for the StreamTracker API.
 These define the shape of data accepted/returned by the API.
 """
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -68,5 +68,37 @@ class TVShowUpdate(BaseModel):
 class TVShow(TVShowBase):
     id: int
 
+    class Config:
+        from_attributes = True
+
+
+# Export/Import schemas
+class ExportData(BaseModel):
+    """Schema for exporting all data from StreamTracker"""
+    movies: List[Movie] = Field(..., description="List of all movies")
+    tv_shows: List[TVShow] = Field(..., description="List of all TV shows")
+    export_metadata: dict = Field(..., description="Export metadata including timestamp and version")
+    
+    class Config:
+        from_attributes = True
+
+
+class ImportData(BaseModel):
+    """Schema for importing data into StreamTracker"""
+    movies: List[MovieCreate] = Field(default=[], description="Movies to import")
+    tv_shows: List[TVShowCreate] = Field(default=[], description="TV shows to import")
+    
+    class Config:
+        from_attributes = True
+
+
+class ImportResult(BaseModel):
+    """Schema for import operation results"""
+    movies_created: int = Field(..., description="Number of movies created")
+    movies_updated: int = Field(..., description="Number of movies updated")
+    tv_shows_created: int = Field(..., description="Number of TV shows created")
+    tv_shows_updated: int = Field(..., description="Number of TV shows updated")
+    errors: List[str] = Field(default=[], description="List of errors encountered during import")
+    
     class Config:
         from_attributes = True
