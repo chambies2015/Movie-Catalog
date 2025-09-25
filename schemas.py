@@ -102,3 +102,66 @@ class ImportResult(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+# Statistics schemas
+class WatchStatistics(BaseModel):
+    """Schema for watch statistics"""
+    total_movies: int = Field(..., description="Total number of movies")
+    watched_movies: int = Field(..., description="Number of watched movies")
+    unwatched_movies: int = Field(..., description="Number of unwatched movies")
+    total_tv_shows: int = Field(..., description="Total number of TV shows")
+    watched_tv_shows: int = Field(..., description="Number of watched TV shows")
+    unwatched_tv_shows: int = Field(..., description="Number of unwatched TV shows")
+    total_items: int = Field(..., description="Total number of items")
+    watched_items: int = Field(..., description="Number of watched items")
+    unwatched_items: int = Field(..., description="Number of unwatched items")
+    completion_percentage: float = Field(..., description="Percentage of items watched")
+
+
+class RatingItem(BaseModel):
+    """Schema for rated items in statistics"""
+    title: str = Field(..., description="Title of the item")
+    type: str = Field(..., description="Type (Movie or TV Show)")
+    rating: int = Field(..., description="Rating of the item")
+
+
+class RatingStatistics(BaseModel):
+    """Schema for rating statistics"""
+    average_rating: float = Field(..., description="Average rating across all items")
+    total_rated_items: int = Field(..., description="Total number of rated items")
+    rating_distribution: dict = Field(..., description="Distribution of ratings 1-10")
+    highest_rated: List[RatingItem] = Field(..., description="Highest rated items")
+    lowest_rated: List[RatingItem] = Field(..., description="Lowest rated items")
+
+
+class YearStatistics(BaseModel):
+    """Schema for year-based statistics"""
+    movies_by_year: dict = Field(..., description="Movies count by year")
+    tv_shows_by_year: dict = Field(..., description="TV shows count by year")
+    all_years: List[int] = Field(..., description="All years in the collection")
+    decade_stats: dict = Field(..., description="Statistics by decade")
+    oldest_year: Optional[int] = Field(None, description="Oldest year in collection")
+    newest_year: Optional[int] = Field(None, description="Newest year in collection")
+
+
+class DirectorItem(BaseModel):
+    """Schema for director statistics"""
+    director: str = Field(..., description="Director name")
+    count: int = Field(..., description="Number of movies")
+    avg_rating: Optional[float] = Field(None, description="Average rating (for rated directors)")
+
+
+class DirectorStatistics(BaseModel):
+    """Schema for director statistics"""
+    top_directors: List[DirectorItem] = Field(..., description="Directors with most movies")
+    highest_rated_directors: List[DirectorItem] = Field(..., description="Directors with highest average ratings")
+
+
+class StatisticsDashboard(BaseModel):
+    """Complete statistics dashboard schema"""
+    watch_stats: WatchStatistics = Field(..., description="Watch statistics")
+    rating_stats: RatingStatistics = Field(..., description="Rating statistics")
+    year_stats: YearStatistics = Field(..., description="Year-based statistics")
+    director_stats: DirectorStatistics = Field(..., description="Director statistics")
+    generated_at: str = Field(..., description="Timestamp when statistics were generated")

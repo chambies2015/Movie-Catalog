@@ -268,3 +268,49 @@ async def import_from_file(file: UploadFile = File(...), db: Session = Depends(g
         raise HTTPException(status_code=400, detail="Invalid JSON file")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
+
+# Statistics endpoints
+@app.get("/statistics/", response_model=schemas.StatisticsDashboard, tags=["statistics"])
+async def get_statistics_dashboard(db: Session = Depends(get_db)):
+    """Get comprehensive statistics dashboard"""
+    watch_stats = crud.get_watch_statistics(db)
+    rating_stats = crud.get_rating_statistics(db)
+    year_stats = crud.get_year_statistics(db)
+    director_stats = crud.get_director_statistics(db)
+    
+    return schemas.StatisticsDashboard(
+        watch_stats=schemas.WatchStatistics(**watch_stats),
+        rating_stats=schemas.RatingStatistics(**rating_stats),
+        year_stats=schemas.YearStatistics(**year_stats),
+        director_stats=schemas.DirectorStatistics(**director_stats),
+        generated_at=datetime.now().isoformat()
+    )
+
+
+@app.get("/statistics/watch/", response_model=schemas.WatchStatistics, tags=["statistics"])
+async def get_watch_statistics(db: Session = Depends(get_db)):
+    """Get watch statistics"""
+    stats = crud.get_watch_statistics(db)
+    return schemas.WatchStatistics(**stats)
+
+
+@app.get("/statistics/ratings/", response_model=schemas.RatingStatistics, tags=["statistics"])
+async def get_rating_statistics(db: Session = Depends(get_db)):
+    """Get rating statistics"""
+    stats = crud.get_rating_statistics(db)
+    return schemas.RatingStatistics(**stats)
+
+
+@app.get("/statistics/years/", response_model=schemas.YearStatistics, tags=["statistics"])
+async def get_year_statistics(db: Session = Depends(get_db)):
+    """Get year-based statistics"""
+    stats = crud.get_year_statistics(db)
+    return schemas.YearStatistics(**stats)
+
+
+@app.get("/statistics/directors/", response_model=schemas.DirectorStatistics, tags=["statistics"])
+async def get_director_statistics(db: Session = Depends(get_db)):
+    """Get director statistics"""
+    stats = crud.get_director_statistics(db)
+    return schemas.DirectorStatistics(**stats)

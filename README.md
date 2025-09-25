@@ -14,6 +14,7 @@ StreamTracker is an evolution of my original Movie Catalog project. It provides 
 - **Modern UI:** A standalone HTML file (see `movie_tracker_ui.html`) lets you interact with the API. It supports light and dark modes and a sleek, responsive design.
 - **Poster caching:** Automatically fetches and caches movie/TV show posters to avoid API rate limits.
 - **Export/Import functionality:** Export all your data to JSON format or import data from JSON files with conflict resolution.
+- **Statistics Dashboard:** Comprehensive analytics showing watch progress, rating distributions, year analysis, and director statistics with beautiful visualizations.
 
 ## Running the API
 
@@ -54,6 +55,40 @@ The export/import functionality is also available via API:
 - `POST /import/` - Import data from JSON payload
 - `POST /import/file/` - Import data from uploaded JSON file
 
+## Statistics Dashboard
+
+StreamTracker includes a comprehensive statistics dashboard accessible via the **📊 Statistics** tab:
+
+### Watch Progress Analytics
+- **Total items** in your collection (movies + TV shows)
+- **Watched vs. unwatched** counts and percentages
+- **Visual progress bar** showing completion status
+- **Separate tracking** for movies and TV shows
+
+### Rating Analysis
+- **Average rating** across all rated items
+- **Rating distribution** with interactive bar charts (1-10 scale)
+- **Highest rated items** showing your top-rated movies and TV shows
+- **Visual representation** of your rating patterns
+
+### Year Analysis
+- **Oldest and newest** years in your collection
+- **Decade breakdown** with bar charts showing distribution across decades
+- **Year-based insights** to understand your viewing preferences over time
+
+### Director Statistics
+- **Most prolific directors** (directors with the most movies in your collection)
+- **Highest rated directors** (directors with the best average ratings)
+- **Director insights** to discover your favorite filmmakers
+
+### API Endpoints
+The statistics are also available via API:
+- `GET /statistics/` - Complete statistics dashboard
+- `GET /statistics/watch/` - Watch progress statistics
+- `GET /statistics/ratings/` - Rating analysis
+- `GET /statistics/years/` - Year-based statistics
+- `GET /statistics/directors/` - Director statistics
+
 ## Using the UI
 
 The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker:
@@ -63,8 +98,9 @@ The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker
 - **Edit & delete:** Modify existing entries or remove them entirely.
 - **Night mode:** Toggle between light and dark themes.
 - **Poster caching:** Automatically fetches and caches movie/TV show posters for instant loading.
-- **Tabbed interface:** Switch between Movies and TV Shows with dedicated sections.
+- **Tabbed interface:** Switch between Movies, TV Shows, and Statistics with dedicated sections.
 - **Export/Import:** Export your entire collection to JSON or import data from JSON files with smart conflict resolution.
+- **Statistics Dashboard:** Comprehensive analytics with watch progress, rating distributions, year analysis, and director insights.
 
 # Preview:
 <img width="2116" height="1946" alt="image" src="https://github.com/user-attachments/assets/fb2b28ed-7cf7-4ab1-b2c4-2bbf056d4f17" />
@@ -75,6 +111,7 @@ The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker
 - [x] **TV Shows compatibility**
 - [x] **Poster caching system**
 - [x] **Export/import functionality**
+- [x] **Statistics dashboard**
 - [ ] **Migrate to server/client setup**
 - [ ] **Account creation/login**
 - [ ] **Add friends to check each other's lists**

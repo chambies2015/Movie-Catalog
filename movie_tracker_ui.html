@@ -256,6 +256,137 @@
       td:nth-of-type(8):before { content: "IMDb"; }
       td:nth-of-type(9):before { content: "Actions"; }
     }
+
+    /* Statistics Dashboard Styles */
+    .stats-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 15px;
+      background-color: var(--bg);
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--fg);
+      opacity: 0.8;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: var(--table-row-alt);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #4caf50);
+      transition: width 0.5s ease;
+      border-radius: 10px;
+    }
+
+    .rating-distribution, .decade-stats {
+      margin: 20px 0;
+    }
+
+    .rating-bar, .decade-bar {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      gap: 10px;
+    }
+
+    .rating-bar-label, .decade-bar-label {
+      width: 40px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .rating-bar-fill, .decade-bar-fill {
+      height: 20px;
+      background-color: var(--primary);
+      border-radius: 10px;
+      position: relative;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .rating-bar-count, .decade-bar-count {
+      font-weight: bold;
+      min-width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .top-rated, .director-stats {
+      margin: 20px 0;
+    }
+
+    .rated-item, .director-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      margin: 5px 0;
+      background-color: var(--bg);
+      border-radius: 6px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .rated-item-title, .director-name {
+      font-weight: bold;
+    }
+
+    .rated-item-rating, .director-rating {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .director-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .director-column h4 {
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .director-stats {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -266,8 +397,9 @@
     </div>
     
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('movies')">Movies</button>
-      <button class="tab" onclick="switchTab('tv-shows')">TV Shows</button>
+      <button class="tab active" onclick="switchTab('movies')">🎬 Movies</button>
+      <button class="tab" onclick="switchTab('tv-shows')">📺 TV Shows</button>
+      <button class="tab" onclick="switchTab('statistics')">📊 Statistics</button>
     </div>
 
     <!-- Movies Tab Content -->
@@ -401,6 +533,100 @@
         </table>
       </div>
     </div>
+
+    <!-- Statistics Tab Content -->
+    <div id="statistics-tab" class="tab-content">
+      <div class="card">
+        <h2>📊 Statistics Dashboard</h2>
+        <div id="statsLoading" style="text-align: center; padding: 20px;">
+          <p>Loading statistics...</p>
+        </div>
+        <div id="statsContent" style="display: none;">
+          <!-- Watch Statistics -->
+          <div class="stats-section">
+            <h3>📈 Watch Progress</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">Total Items</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="watchedItems">0</div>
+                <div class="stat-label">Watched</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="unwatchedItems">0</div>
+                <div class="stat-label">Unwatched</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="completionPercentage">0%</div>
+                <div class="stat-label">Completion</div>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <!-- Rating Statistics -->
+          <div class="stats-section">
+            <h3>⭐ Rating Analysis</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number" id="averageRating">0.0</div>
+                <div class="stat-label">Average Rating</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="totalRatedItems">0</div>
+                <div class="stat-label">Rated Items</div>
+              </div>
+            </div>
+            <div class="rating-distribution">
+              <h4>Rating Distribution</h4>
+              <div id="ratingBars"></div>
+            </div>
+            <div class="top-rated">
+              <h4>🏆 Highest Rated</h4>
+              <div id="highestRatedList"></div>
+            </div>
+          </div>
+
+          <!-- Year Statistics -->
+          <div class="stats-section">
+            <h3>📅 Year Analysis</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-number" id="oldestYear">-</div>
+                <div class="stat-label">Oldest Year</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="newestYear">-</div>
+                <div class="stat-label">Newest Year</div>
+              </div>
+            </div>
+            <div class="decade-stats">
+              <h4>Decade Breakdown</h4>
+              <div id="decadeBars"></div>
+            </div>
+          </div>
+
+          <!-- Director Statistics -->
+          <div class="stats-section">
+            <h3>🎬 Director Analysis</h3>
+            <div class="director-stats">
+              <div class="director-column">
+                <h4>Most Prolific Directors</h4>
+                <div id="topDirectorsList"></div>
+              </div>
+              <div class="director-column">
+                <h4>Highest Rated Directors</h4>
+                <div id="highestRatedDirectorsList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="credentials.js"></script>
   <script>
@@ -428,6 +654,8 @@
         loadMovies();
       } else if (tabName === 'tv-shows') {
         loadTVShows();
+      } else if (tabName === 'statistics') {
+        loadStatistics();
       }
     }
 
@@ -874,6 +1102,171 @@
         alert('Import failed: ' + error.message);
         fileInput.value = '';
       }
+    }
+
+    // Statistics functions
+    async function loadStatistics() {
+      try {
+        document.getElementById('statsLoading').style.display = 'block';
+        document.getElementById('statsContent').style.display = 'none';
+        
+        const response = await fetch(`${API_BASE}/statistics/`);
+        if (!response.ok) {
+          throw new Error('Failed to load statistics');
+        }
+        
+        const stats = await response.json();
+        displayStatistics(stats);
+        
+        document.getElementById('statsLoading').style.display = 'none';
+        document.getElementById('statsContent').style.display = 'block';
+      } catch (error) {
+        console.error('Error loading statistics:', error);
+        document.getElementById('statsLoading').innerHTML = '<p style="color: red;">Error loading statistics: ' + error.message + '</p>';
+      }
+    }
+
+    function displayStatistics(stats) {
+      // Watch statistics
+      document.getElementById('totalItems').textContent = stats.watch_stats.total_items;
+      document.getElementById('watchedItems').textContent = stats.watch_stats.watched_items;
+      document.getElementById('unwatchedItems').textContent = stats.watch_stats.unwatched_items;
+      document.getElementById('completionPercentage').textContent = stats.watch_stats.completion_percentage + '%';
+      
+      // Progress bar
+      const progressFill = document.getElementById('progressFill');
+      progressFill.style.width = stats.watch_stats.completion_percentage + '%';
+      
+      // Rating statistics
+      document.getElementById('averageRating').textContent = stats.rating_stats.average_rating;
+      document.getElementById('totalRatedItems').textContent = stats.rating_stats.total_rated_items;
+      
+      // Rating distribution
+      displayRatingDistribution(stats.rating_stats.rating_distribution);
+      
+      // Highest rated items
+      displayHighestRated(stats.rating_stats.highest_rated);
+      
+      // Year statistics
+      document.getElementById('oldestYear').textContent = stats.year_stats.oldest_year || '-';
+      document.getElementById('newestYear').textContent = stats.year_stats.newest_year || '-';
+      
+      // Decade statistics
+      displayDecadeStats(stats.year_stats.decade_stats);
+      
+      // Director statistics
+      displayTopDirectors(stats.director_stats.top_directors);
+      displayHighestRatedDirectors(stats.director_stats.highest_rated_directors);
+    }
+
+    function displayRatingDistribution(distribution) {
+      const container = document.getElementById('ratingBars');
+      container.innerHTML = '';
+      
+      // Get all counts and find the maximum
+      const counts = Object.values(distribution).map(Number);
+      const maxCount = counts.length > 0 ? Math.max(...counts) : 1;
+      
+      for (let rating = 1; rating <= 10; rating++) {
+        const count = distribution[rating.toString()] || 0;
+        const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+        
+        const barDiv = document.createElement('div');
+        barDiv.className = 'rating-bar';
+        barDiv.innerHTML = `
+          <div class="rating-bar-label">${rating}</div>
+          <div class="rating-bar-fill" style="width: ${percentage}%"></div>
+          <div class="rating-bar-count">${count}</div>
+        `;
+        container.appendChild(barDiv);
+      }
+    }
+
+    function displayHighestRated(items) {
+      const container = document.getElementById('highestRatedList');
+      container.innerHTML = '';
+      
+      if (items.length === 0) {
+        container.innerHTML = '<p>No rated items found.</p>';
+        return;
+      }
+      
+      items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'rated-item';
+        itemDiv.innerHTML = `
+          <div class="rated-item-title">${item.title} (${item.type})</div>
+          <div class="rated-item-rating">${item.rating}/10</div>
+        `;
+        container.appendChild(itemDiv);
+      });
+    }
+
+    function displayDecadeStats(decadeStats) {
+      const container = document.getElementById('decadeBars');
+      container.innerHTML = '';
+      
+      const decades = Object.keys(decadeStats).sort();
+      
+      // Calculate totals for each decade and find the maximum
+      const totals = decades.map(decade => 
+        (decadeStats[decade].movies || 0) + (decadeStats[decade].tv_shows || 0)
+      );
+      const maxCount = totals.length > 0 ? Math.max(...totals) : 1;
+      
+      decades.forEach(decade => {
+        const total = (decadeStats[decade].movies || 0) + (decadeStats[decade].tv_shows || 0);
+        const percentage = maxCount > 0 ? (total / maxCount) * 100 : 0;
+        
+        const barDiv = document.createElement('div');
+        barDiv.className = 'decade-bar';
+        barDiv.innerHTML = `
+          <div class="decade-bar-label">${decade}</div>
+          <div class="decade-bar-fill" style="width: ${percentage}%"></div>
+          <div class="decade-bar-count">${total}</div>
+        `;
+        container.appendChild(barDiv);
+      });
+    }
+
+    function displayTopDirectors(directors) {
+      const container = document.getElementById('topDirectorsList');
+      container.innerHTML = '';
+      
+      if (directors.length === 0) {
+        container.innerHTML = '<p>No directors found.</p>';
+        return;
+      }
+      
+      directors.forEach(director => {
+        const directorDiv = document.createElement('div');
+        directorDiv.className = 'director-item';
+        directorDiv.innerHTML = `
+          <div class="director-name">${director.director}</div>
+          <div class="director-rating">${director.count} movies</div>
+        `;
+        container.appendChild(directorDiv);
+      });
+    }
+
+    function displayHighestRatedDirectors(directors) {
+      const container = document.getElementById('highestRatedDirectorsList');
+      container.innerHTML = '';
+      
+      if (directors.length === 0) {
+        container.innerHTML = '<p>No rated directors found.</p>';
+        return;
+      }
+      
+      directors.forEach(director => {
+        const directorDiv = document.createElement('div');
+        directorDiv.className = 'director-item';
+        directorDiv.innerHTML = `
+          <div class="director-name">${director.director}</div>
+          <div class="director-rating">${director.avg_rating}/10 (${director.count} movies)</div>
+        `;
+        container.appendChild(directorDiv);
+      });
     }
 
     // Event listeners
