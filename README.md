@@ -103,7 +103,9 @@ The `movie_tracker_ui.html` file provides a modern front‑end for StreamTracker
 - **Statistics Dashboard:** Comprehensive analytics with watch progress, rating distributions, year analysis, and director insights.
 
 # Preview:
-<img width="2116" height="1946" alt="image" src="https://github.com/user-attachments/assets/fb2b28ed-7cf7-4ab1-b2c4-2bbf056d4f17" />
+<img width="2178" height="1936" alt="image" src="https://github.com/user-attachments/assets/89868584-9b5d-4c0a-a4ad-61046aa5a88b" />
+<img width="1918" height="1912" alt="image" src="https://github.com/user-attachments/assets/a0c52df2-e723-4e76-845c-6e49e5957f83" />
+
 
 
 # Future features:
