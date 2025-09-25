@@ -8,7 +8,8 @@ import json
 
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect, text
 
@@ -22,7 +23,7 @@ Base.metadata.create_all(bind=engine)
 # Lightweight migration: add missing columns if upgrading an existing DB
 try:
     inspector = inspect(engine)
-    
+
     # Check movies table for review and poster_url columns
     existing_columns = {col["name"] for col in inspector.get_columns("movies")}
     if "review" not in existing_columns:
@@ -33,20 +34,20 @@ try:
         with engine.connect() as conn:
             conn.execute(text("ALTER TABLE movies ADD COLUMN poster_url VARCHAR"))
             conn.commit()
-    
+
     # Check tv_shows table for schema migration
     if inspector.has_table("tv_shows"):
         tv_columns = {col["name"] for col in inspector.get_columns("tv_shows")}
-        
+
         # If we have the old schema (creator, year_started, year_ended), migrate to new schema
         if "creator" in tv_columns and "year_started" in tv_columns:
             with engine.connect() as conn:
                 # Create a backup table with old data
                 conn.execute(text("CREATE TABLE tv_shows_backup AS SELECT * FROM tv_shows"))
-                
+
                 # Drop the old table
                 conn.execute(text("DROP TABLE tv_shows"))
-                
+
                 # Recreate the table with new schema
                 conn.execute(text("""
                     CREATE TABLE tv_shows (
@@ -61,17 +62,17 @@ try:
                         poster_url VARCHAR
                     )
                 """))
-                
+
                 # Migrate data from backup (use year_started as the year)
                 conn.execute(text("""
                     INSERT INTO tv_shows (id, title, year, seasons, episodes, rating, watched, review, poster_url)
                     SELECT id, title, year_started, seasons, episodes, rating, watched, review, NULL
                     FROM tv_shows_backup
                 """))
-                
+
                 # Drop the backup table
                 conn.execute(text("DROP TABLE tv_shows_backup"))
-                
+
                 conn.commit()
                 print("Successfully migrated tv_shows table to new schema")
         else:
@@ -80,7 +81,7 @@ try:
                 with engine.connect() as conn:
                     conn.execute(text("ALTER TABLE tv_shows ADD COLUMN poster_url VARCHAR"))
                     conn.commit()
-    
+
 except Exception as e:
     # Best-effort migration; avoid crashing app startup if inspection fails
     print(f"Migration warning: {e}")
@@ -98,6 +99,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for the UI
+import os
+
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
+# Add individual file serving for assets
+@app.get("/credentials.js")
+async def get_credentials():
+    credentials_file = os.path.join(os.path.dirname(__file__), "credentials.js")
+    if os.path.exists(credentials_file):
+        return FileResponse(credentials_file)
+    raise HTTPException(status_code=404, detail="credentials.js not found")
+
+
+@app.get("/movie_theater_background.jpg")
+async def get_movie_theater_bg():
+    bg_file = os.path.join(os.path.dirname(__file__), "movie_theater_background.jpg")
+    if os.path.exists(bg_file):
+        return FileResponse(bg_file)
+    raise HTTPException(status_code=404, detail="movie_theater_background.jpg not found")
+
+
+@app.get("/film_background.jpg")
+async def get_film_bg():
+    bg_file = os.path.join(os.path.dirname(__file__), "film_background.jpg")
+    if os.path.exists(bg_file):
+        return FileResponse(bg_file)
+    raise HTTPException(status_code=404, detail="film_background.jpg not found")
+
+
+@app.get("/favicon.ico")
+async def get_favicon():
+    favicon_file = os.path.join(os.path.dirname(__file__), "favicon.ico")
+    if os.path.exists(favicon_file):
+        return FileResponse(favicon_file, media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="favicon.ico not found")
+
 
 def get_db():
     db = SessionLocal()
@@ -109,6 +150,10 @@ def get_db():
 
 @app.get("/", tags=["root"])
 async def read_root():
+    # Serve the HTML UI file
+    html_file = os.path.join(os.path.dirname(__file__), "movie_tracker_ui.html")
+    if os.path.exists(html_file):
+        return FileResponse(html_file)
     return {"message": "StreamTracker API is running \U0001f680"}
 
 
@@ -198,14 +243,14 @@ async def export_data(db: Session = Depends(get_db)):
     """Export all movies and TV shows as JSON"""
     movies = crud.get_all_movies(db)
     tv_shows = crud.get_all_tv_shows(db)
-    
+
     export_metadata = {
         "export_timestamp": datetime.now().isoformat(),
         "version": "1.0",
         "total_movies": len(movies),
         "total_tv_shows": len(tv_shows)
     }
-    
+
     return schemas.ExportData(
         movies=movies,
         tv_shows=tv_shows,
@@ -218,9 +263,9 @@ async def import_data(import_data: schemas.ImportData, db: Session = Depends(get
     """Import movies and TV shows from JSON data"""
     movies_created, movies_updated, movie_errors = crud.import_movies(db, import_data.movies)
     tv_shows_created, tv_shows_updated, tv_show_errors = crud.import_tv_shows(db, import_data.tv_shows)
-    
+
     all_errors = movie_errors + tv_show_errors
-    
+
     return schemas.ImportResult(
         movies_created=movies_created,
         movies_updated=movies_updated,
@@ -235,27 +280,27 @@ async def import_from_file(file: UploadFile = File(...), db: Session = Depends(g
     """Import data from a JSON file upload"""
     if not file.filename.endswith('.json'):
         raise HTTPException(status_code=400, detail="File must be a JSON file")
-    
+
     try:
         content = await file.read()
         data = json.loads(content.decode('utf-8'))
-        
+
         # Validate the imported data structure
         if 'movies' not in data or 'tv_shows' not in data:
             raise HTTPException(status_code=400, detail="Invalid file format. Expected 'movies' and 'tv_shows' arrays.")
-        
+
         # Convert to Pydantic models
         movies = [schemas.MovieCreate(**movie) for movie in data.get('movies', [])]
         tv_shows = [schemas.TVShowCreate(**tv_show) for tv_show in data.get('tv_shows', [])]
-        
+
         import_data = schemas.ImportData(movies=movies, tv_shows=tv_shows)
-        
+
         # Import the data
         movies_created, movies_updated, movie_errors = crud.import_movies(db, import_data.movies)
         tv_shows_created, tv_shows_updated, tv_show_errors = crud.import_tv_shows(db, import_data.tv_shows)
-        
+
         all_errors = movie_errors + tv_show_errors
-        
+
         return schemas.ImportResult(
             movies_created=movies_created,
             movies_updated=movies_updated,
@@ -263,7 +308,7 @@ async def import_from_file(file: UploadFile = File(...), db: Session = Depends(g
             tv_shows_updated=tv_shows_updated,
             errors=all_errors
         )
-        
+
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON file")
     except Exception as e:
@@ -278,7 +323,7 @@ async def get_statistics_dashboard(db: Session = Depends(get_db)):
     rating_stats = crud.get_rating_statistics(db)
     year_stats = crud.get_year_statistics(db)
     director_stats = crud.get_director_statistics(db)
-    
+
     return schemas.StatisticsDashboard(
         watch_stats=schemas.WatchStatistics(**watch_stats),
         rating_stats=schemas.RatingStatistics(**rating_stats),
@@ -314,3 +359,26 @@ async def get_director_statistics(db: Session = Depends(get_db)):
     """Get director statistics"""
     stats = crud.get_director_statistics(db)
     return schemas.DirectorStatistics(**stats)
+
+
+# Auto-browser opening functionality
+def open_browser():
+    """Open the default web browser to the StreamTracker UI"""
+    import webbrowser
+    import time
+    import threading
+
+    def delayed_open():
+        time.sleep(2)  # Wait 2 seconds for server to start
+        webbrowser.open("http://127.0.0.1:8000")
+
+    # Start browser opening in a separate thread
+    browser_thread = threading.Thread(target=delayed_open, daemon=True)
+    browser_thread.start()
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    open_browser()
+    uvicorn.run(app, host="127.0.0.1", port=8000)

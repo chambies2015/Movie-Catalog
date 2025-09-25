@@ -259,6 +259,7 @@ def get_rating_statistics(db: Session) -> dict:
     if not all_ratings:
         return {
             "average_rating": 0,
+            "total_rated_items": 0,
             "rating_distribution": {},
             "highest_rated": [],
             "lowest_rated": []
